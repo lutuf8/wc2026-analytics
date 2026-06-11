@@ -316,6 +316,13 @@
     <div class="sec-head">Group standings</div>
     <div class="leg"><span><i class="dot q"></i> Top 2 &mdash; qualify</span><span><i class="dot t"></i> 3rd &mdash; best-third race</span><span><i class="dot o"></i> Eliminated</span></div>
     <div class="grp-grid" id="grpGrid"></div>
+
+    <div class="sec-head" style="margin-top:34px;">Best third-placed teams</div>
+    <div class="lab-note" style="margin-bottom:18px;">The 8 best third-placed teams advance to the Round of 32. Ranked by points, then goal difference, then goals scored. <b>Green = advancing, red = eliminated.</b></div>
+    <div class="grp-card" style="max-width:560px;">
+      <div class="grp-h">Third-place <em>ranking</em></div>
+      <table class="stbl"><thead><tr><th>Team</th><th>Grp</th><th>P</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody id="thirdBody"></tbody></table>
+    </div>
   </div>
 
   <div class="pane" id="p-bracket">
@@ -645,6 +652,22 @@ function renderStandings(){
       '</tbody></table></div>';
   });
   document.getElementById('grpGrid').innerHTML=html;
+  renderThirdPlace(G);
+}
+function renderThirdPlace(G){
+  const tb=document.getElementById('thirdBody');
+  if(!tb)return;
+  const thirds=[];
+  Object.keys(G).forEach(L=>{
+    const rows=Object.values(G[L]).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+    if(rows.length>=3 && rows[2].p>0) thirds.push({...rows[2],grp:L});
+  });
+  if(!thirds.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">Third-place ranking appears once group matches are played</div></td></tr>';return;}
+  thirds.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+  tb.innerHTML=thirds.map((t,i)=>{
+    const adv=i<8; const gd=t.gf-t.ga;
+    return '<tr class="'+(adv?'qual':'out')+'"><td>'+t.name+'</td><td>'+t.grp+'</td><td>'+t.p+'</td><td>'+(gd>0?'+':'')+gd+'</td><td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
+  }).join('');
 }
 
 function renderBracket(){
