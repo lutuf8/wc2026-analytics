@@ -40,7 +40,7 @@
   .stripe span { flex:1; }
   .stripe .r{background:var(--red)} .stripe .g{background:var(--green)} .stripe .b{background:var(--blue)}
 
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 40px; backdrop-filter:blur(12px); background:rgba(8,11,20,0.6); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50; flex-wrap:wrap; gap:12px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 40px; backdrop-filter:blur(12px); background:rgba(8,11,20,0.85); border-bottom:none; position:sticky; top:0; z-index:50; flex-wrap:wrap; gap:12px; }
   .brand { display:flex; align-items:center; gap:13px; }
   .brand-mark { width:40px; height:40px; border-radius:11px; background:linear-gradient(140deg,var(--gold2),var(--gold),#D99000); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 18px var(--gold-glow); }
   .brand-mark svg { width:24px; height:24px; color:#1a1200; }
@@ -53,7 +53,7 @@
 
   /* HERO */
   .hero { padding:48px 40px 38px; position:relative; }
-  .hero-inner { max-width:1320px; margin:0 auto; display:grid; grid-template-columns:1fr; gap:30px; }
+  .hero-inner { display:grid; grid-template-columns:1fr; gap:30px; }
   @media(min-width:1000px){ .hero-inner { grid-template-columns:1fr 360px; align-items:center; } }
   .hero-spot { background:linear-gradient(165deg,var(--surf1),rgba(11,15,28,0.5)); border:1px solid var(--line); border-radius:18px; padding:20px 22px; }
   .spot-h { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
@@ -68,6 +68,7 @@
   .next-match { background:linear-gradient(150deg,rgba(255,193,48,0.10),transparent); border:1px solid var(--line2); border-radius:14px; padding:16px; margin-bottom:18px; }
   .nm-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
   .nm-label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold); }
+  .nm-grp { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
   .nm-teams { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
   .nm-team { display:flex; flex-direction:column; align-items:center; gap:7px; flex:1; }
   .nm-team img { width:42px; height:28px; object-fit:cover; border-radius:4px; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
@@ -94,14 +95,14 @@
 
   /* TABS */
   .tabwrap { padding:0 40px; position:sticky; top:71px; z-index:40; background:linear-gradient(var(--midnight),rgba(8,11,20,0.85)); backdrop-filter:blur(8px); }
-  .tabwrap .tabs { margin-left:auto; margin-right:auto; max-width:1320px; }
+  .tabwrap .tabs { margin-left:0; margin-right:0; max-width:none; }
   .tabs { display:flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid var(--line); padding:5px; border-radius:14px; margin-bottom:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; max-width:100%; }
   .tabs::-webkit-scrollbar { display:none; }
   .tab { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:16px; letter-spacing:0.04em; text-transform:uppercase; padding:10px 22px; border-radius:10px; cursor:pointer; color:var(--muted); background:none; border:none; transition:all .25s; white-space:nowrap; flex-shrink:0; }
   .tab:hover { color:var(--text); }
   .tab.active { color:#1a1200; background:linear-gradient(135deg,var(--gold),var(--gold2)); box-shadow:0 6px 20px var(--gold-glow); }
 
-  .main { padding:30px 40px 0; max-width:1320px; margin:0 auto; }
+  .main { padding:30px 40px 0; }
   .pane { display:none; } .pane.active { display:block; }
 
   .sec-head { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0 0 16px; display:flex; align-items:center; gap:12px; }
@@ -443,7 +444,10 @@
     </div>
 
     <div id="byPlayer" style="display:none">
-      <div class="ctrl"><select class="sel" id="ppPlayerSel" onchange="renderByPlayer()"></select></div>
+      <div class="ctrl" style="flex-direction:column;gap:8px">
+        <input class="sel" type="text" id="ppSearch" placeholder="Search player name..." oninput="filterPlayers()" style="cursor:text">
+        <select class="sel" id="ppPlayerSel" onchange="renderByPlayer()"></select>
+      </div>
       <div id="ppProfile"></div>
     </div>
   </div>
@@ -461,35 +465,60 @@
   </div>
 
   <div class="pane" id="p-lab">
-    <div class="lab-note"><b>Data Lab.</b> Advanced statistical views built on a custom Player Performance Index, expected-goals analysis, playing-style clustering and a logistic win-probability model. Each view applies a different analytical lens to the same match data.</div>
+    <div class="lab-note"><b>Data Lab.</b> Advanced statistical views powered by your custom Player Performance Index (PPI), expected goals, and a logistic win-probability model. All charts update automatically as match data flows in from the pipeline. Charts use <b>demo data</b> until sufficient real matches have been played.</div>
     <div class="g2">
       <div class="card"><div class="card-b">
         <div class="chart-t">Win Probability Model</div>
-        <div class="chart-d">Logistic model using xG differential, possession and pressing intensity to estimate outcome probabilities. Pick two teams.</div>
+        <div class="chart-d">Estimates match outcome probabilities using a logistic regression model based on each team's <b>cumulative xG per game</b>, <b>average possession</b>, and <b>PPDA pressing intensity</b>. More matches = more accurate. All 48 tournament teams available.</div>
         <div class="pred"><select class="sel" id="teamA" onchange="predict()"></select><span style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:13px;">vs</span><select class="sel" id="teamB" onchange="predict()"></select></div>
         <div class="pbars" id="pbars"></div>
-        <div class="pleg"><span id="legA">Home</span><span>Draw</span><span id="legB">Away</span></div>
+        <div class="pleg"><span id="legA">Team A win</span><span>Draw</span><span id="legB">Team B win</span></div>
+        <div style="font-size:10px;color:var(--dim);margin-top:8px;font-family:JetBrains Mono,monospace;">⚠ Indicative model only. Accuracy improves with more match data.</div>
       </div></div>
       <div class="card"><div class="card-b">
-        <div class="chart-t">Correlation Heatmap</div>
-        <div class="chart-d">Pearson correlation between key match metrics and goals scored. Gold = strong positive, red = negative.</div>
+        <div class="chart-t">Stat Correlation Heatmap</div>
+        <div class="chart-d">Pearson correlation between match-level statistics across <b>all games played so far</b>. Shows which stats most strongly predict goals scored. Gold = strong positive link, red = negative.</div>
         <div id="heat"></div>
       </div></div>
     </div>
     <div class="g2">
-      <div class="card"><div class="card-b"><div class="chart-t">xG Performance Matrix</div><div class="chart-d">Goals vs expected goals. Above the line = clinical, below = wasteful or unlucky.</div><div class="cwrap"><canvas id="xgChart"></canvas></div></div></div>
-      <div class="card"><div class="card-b"><div class="chart-t">Playing Style Quadrant</div><div class="chart-d">Possession vs pressing intensity (PPDA). Maps each team's tactical identity.</div><div class="cwrap"><canvas id="styleChart"></canvas></div></div></div>
+      <div class="card"><div class="card-b">
+        <div class="chart-t">xG vs Goals — All Teams</div>
+        <div class="chart-d">Each dot = one team's tournament totals. <b>Above the diagonal line = clinical</b> (scored more than xG). <b>Below = wasteful or unlucky</b> (underperformed their chances). Hover for team name.</div>
+        <div class="cwrap"><canvas id="xgChart"></canvas></div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="chart-t">Playing Style Quadrant — All Teams</div>
+        <div class="chart-d">Maps each team's tactical identity using <b>possession % (x-axis)</b> vs <b>PPDA (y-axis)</b>. Low PPDA = high press. Top-right = possess and press. Bottom-left = low block, counter.</div>
+        <div class="cwrap"><canvas id="styleChart"></canvas></div>
+      </div></div>
     </div>
     <div class="g2">
-      <div class="card"><div class="card-b"><div class="chart-t">PPI Distribution</div><div class="chart-d">Statistical spread of all player performance scores and where elite outliers sit.</div><div class="cwrap"><canvas id="distChart"></canvas></div></div></div>
-      <div class="card"><div class="card-b"><div class="chart-t">Top Teams Profile</div><div class="chart-d">Normalised comparison across attack, possession, press, efficiency and goals.</div><div class="cwrap"><canvas id="radarChart"></canvas></div></div></div>
+      <div class="card"><div class="card-b">
+        <div class="chart-t">PPI Distribution — All Players</div>
+        <div class="chart-d">Distribution of <b>all player overall PPI scores</b> in the tournament. Shows where the average sits and who the outliers are. A score above 10 means the player is above their position's tournament average.</div>
+        <div class="cwrap"><canvas id="distChart"></canvas></div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="chart-t">Top 4 Teams — Performance Radar</div>
+        <div class="chart-d">Compares the <b>top 4 teams by xG</b> across 5 dimensions: attacking threat, possession, pressing, finishing efficiency, and goals. Each axis normalised 0–10.</div>
+        <div class="cwrap"><canvas id="radarChart"></canvas></div>
+      </div></div>
     </div>
     <div class="method">
-      <div class="chart-t">Methodology &mdash; Player Performance Index</div>
-      <div class="chart-d" style="margin-bottom:6px;">A custom composite scoring each player 0&ndash;10 per match with position-specific weights, normalised across positions for fair cross-comparison.</div>
-      <div class="formula">PPI_forward = 0.30(goals) + 0.25(rating) + 0.15(assists) + 0.10(shots_OT) + 0.10(dribbles) + 0.10(key_passes)</div>
-      <div class="formula">PPI_overall = (PPI_position / position_average) x 10</div>
-      <div class="chart-d" style="margin-top:6px;">Each raw stat normalised to 0&ndash;10 before weighting. Position auto-detected from lineups. Weights calibrated on live tournament data.</div>
+      <div class="chart-t">Methodology &mdash; Player Performance Index (PPI)</div>
+      <div class="chart-d" style="margin-bottom:10px;">A custom composite scoring each player 0&ndash;10 per match using position-specific weights. The <b>overall PPI</b> normalises across positions so forwards, midfielders, defenders and keepers can be compared fairly. A score above 10 means the player performed above their position's tournament average.</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Forwards</div>
+      <div class="formula">0.30(goals) + 0.25(rating) + 0.15(assists) + 0.10(shots_on_target) + 0.10(dribbles) + 0.10(key_passes)</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Midfielders</div>
+      <div class="formula">0.25(rating) + 0.25(key_passes) + 0.20(pass_accuracy) + 0.15(assists) + 0.10(duels_won) + 0.05(goals)</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Defenders</div>
+      <div class="formula">0.30(rating) + 0.25(duels_won) + 0.20(interceptions) + 0.15(tackles) + 0.10(fouls_drawn)</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Goalkeepers</div>
+      <div class="formula">0.30(rating) + 0.30(save_percentage) + 0.20(saves) + 0.20(goals_conceded_vs_xG)</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Normalisation</div>
+      <div class="formula">PPI_overall = (PPI_position / position_average) × 10</div>
+      <div class="chart-d" style="margin-top:8px;">Each raw stat is first normalised 0–10 using min-max scaling across all players at that position. Weights were chosen to reflect what matters most per position and are calibrated on live tournament data.</div>
     </div>
   </div>
 
@@ -573,9 +602,11 @@ let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
 
 // upcoming fixtures (next match panel) — replaced by live api-football data
 const DEMO_UPCOMING=[
-  {home:'Mexico',away:'South Africa',date:'2026-06-11T20:00:00Z',venue:'Estadio Azteca, Mexico City'},
-  {home:'Canada',away:'Bosnia and Herzegovina',date:'2026-06-12T23:00:00Z',venue:'BMO Field, Toronto'},
-  {home:'United States',away:'Paraguay',date:'2026-06-12T20:00:00Z',venue:'SoFi Stadium, Los Angeles'},
+  {home:'Mexico',away:'South Africa',date:'2026-06-11T20:00:00Z',venue:'Estadio Azteca, Mexico City',grp:'A'},
+  {home:'Canada',away:'Bosnia and Herzegovina',date:'2026-06-12T23:00:00Z',venue:'BMO Field, Toronto',grp:'B'},
+  {home:'United States',away:'Paraguay',date:'2026-06-12T20:00:00Z',venue:'SoFi Stadium, Los Angeles',grp:'D'},
+  {home:'Brazil',away:'Morocco',date:'2026-06-13T00:00:00Z',venue:'AT&T Stadium, Dallas',grp:'C'},
+  {home:'Germany',away:'Ivory Coast',date:'2026-06-13T23:00:00Z',venue:'MetLife Stadium, New York',grp:'E'},
 ];
 let UPCOMING=DEMO_UPCOMING;
 
@@ -641,9 +672,10 @@ function renderNextMatch(){
   const now=new Date();
   const next=UPCOMING.map(m=>({...m,d:new Date(m.date)})).filter(m=>m.d>now).sort((a,b)=>a.d-b.d)[0]||UPCOMING.map(m=>({...m,d:new Date(m.date)})).sort((a,b)=>a.d-b.d)[0];
   if(!next){el.style.display='none';return;}
-  const opts={weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'};
-  const when=next.d.toLocaleString(undefined,opts);
+  const opts={weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dubai'};
+  const when=next.d.toLocaleString('en-AE',opts)+' UAE';
   el.innerHTML='<div class="nm-label">Next match</div>'+
+    '<div class="nm-grp">Group '+next.grp+'</div>'+
     '<div class="nm-teams">'+
     '<div class="nm-team">'+flagImg(next.home)+'<span>'+next.home+'</span></div>'+
     '<div class="nm-vs">VS</div>'+
@@ -685,15 +717,60 @@ function computeStorylines(){
 }
 
 function genContent(){
-  const m=D.matches[document.getElementById('matchSel').value];if(!m)return;const a=[];
-  const dh=m.home_score-(m.home_xg||0),da=m.away_score-(m.away_xg||0);
-  if(Math.abs(dh)>=1||Math.abs(da)>=1){const un=dh>da?m.away_team:m.home_team;a.push({t:'xg',l:'xG Story',x:m.home_team+' '+m.home_score+'-'+m.away_score+' '+m.away_team+' &mdash; but the xG tells a different story. '+m.home_team+' created '+m.home_xg?.toFixed(1)+' xG, '+m.away_team+' '+m.away_xg?.toFixed(1)+'. On the underlying numbers, '+un+' will feel hard done by.'});}
-  const dom=m.home_possession>m.away_possession?m.home_team:m.away_team,dp=Math.max(m.home_possession,m.away_possession);
-  if(dp>=60)a.push({t:'tac',l:'Tactical',x:dom+' dominated with '+dp+'% possession. '+(dp>=65?'Total control.':'Clear territorial edge.')+' The question is whether they turned it into enough clear chances.'});
-  const tg=m.home_score+m.away_score;a.push({t:'hook',l:'Hook',x:(tg>=4?tg+' GOALS. ':'')+m.home_team+' '+m.home_score+'-'+m.away_score+' '+m.away_team+'. Here is what the data says actually happened.'});
-  document.getElementById('angles').innerHTML=a.map(o=>'<div class="angle"><span class="atag at-'+o.t+'">'+o.l+'</span><div class="atxt">'+o.x+'</div><button class="cpy" onclick="cpy(this)" data-t="'+o.x.replace(/<[^>]+>/g,'').replace(/"/g,'&quot;')+'">Copy caption</button></div>').join('');
+  const idx=document.getElementById('matchSel').value;
+  const m=D.matches[idx];if(!m)return;
+  const players=PMS.filter(p=>p.m===+idx).sort((a,b)=>b.ovr-a.ovr);
+  const mom=players[0];
+  const tg=m.home_score+m.away_score;
+  const hw=m.home_score>m.away_score,aw=m.away_score>m.home_score;
+  const winner=hw?m.home_team:aw?m.away_team:null;
+  const loser=hw?m.away_team:aw?m.home_team:null;
+  const dh=(m.home_xg||0)-(m.home_score),da=(m.away_xg||0)-(m.away_score);
+  const unlucky=Math.abs(dh)>Math.abs(da)?m.home_team:m.away_team;
+  const dom=m.home_possession>m.away_possession?m.home_team:m.away_team;
+  const domPoss=Math.max(m.home_possession||50,m.away_possession||50);
+  const score=m.home_score+'-'+m.away_score;
+  const a=[];
+
+  // 1. Hook post
+  a.push({t:'hook',l:'🔥 Hook / Opening',
+    x:(tg>=4?tg+' GOALS. ':'')+(winner?winner+' WIN. ':'')+m.home_team+' '+score+' '+m.away_team+'.\n\nHere\'s what the data says actually happened 👇\n\n#WorldCup2026 #WC2026 #Football'});
+
+  // 2. xG story
+  if(m.home_xg&&m.away_xg){
+    const xgH=m.home_xg.toFixed(1),xgA=m.away_xg.toFixed(1);
+    a.push({t:'xg',l:'📊 xG Story',
+      x:m.home_team+' '+score+' '+m.away_team+'\n\nThe scoreline lied.\n\nxG: '+m.home_team+' '+xgH+' vs '+m.away_team+' '+xgA+'\n\n'+unlucky+' were actually the better team by the numbers.\n\nExpected goals strips away luck and shows who created the real danger.\n\n#WC2026Analytics'});
+  }
+
+  // 3. Tactical breakdown
+  a.push({t:'tac',l:'🎯 Tactical Angle',
+    x:m.home_team+' '+score+' '+m.away_team+' | Tactical Breakdown\n\n'+'Possession: '+m.home_team+' '+m.home_possession+'% vs '+m.away_team+' '+m.away_possession+'%\n'+'Shots: '+(m.home_shots||'—')+' vs '+(m.away_shots||'—')+'\n'+(m.home_xg?'xG: '+m.home_xg.toFixed(1)+' vs '+m.away_xg.toFixed(1)+'\n':'')+'\n'+(domPoss>=60?dom+' controlled the tempo but did it translate into the result?':winner?winner+' won it without controlling possession — efficiency over dominance.':'Both sides cancelled each other out in a closely-contested tactical battle.')+'\n\n#WC2026 #Tactics'});
+
+  // 4. Player spotlight (MOM)
+  if(mom){
+    a.push({t:'hook',l:'⭐ Player Spotlight (MOM)',
+      x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+mom.ovr.toFixed(1)+' | Goals: '+mom.g+' | Assists: '+mom.a+'\nKey passes: '+mom.kp+' | Dribbles: '+mom.drb+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+mom.name.replace(/[^a-zA-Z]/g,'')+' #'+mom.team.replace(/ /g,'')});
+  }
+
+  // 5. Instagram carousel structure
+  a.push({t:'tac',l:'📱 IG Carousel Structure',
+    x:'SLIDE 1 — Hook\n"'+m.home_team+' '+score+' '+m.away_team+' — The data breakdown"\n\nSLIDE 2 — Key Stats\nPossession: '+m.home_possession+'% vs '+m.away_possession+'%\nShots: '+(m.home_shots||'?')+' vs '+(m.away_shots||'?')+'\n'+(m.home_xg?'xG: '+m.home_xg.toFixed(1)+' vs '+m.away_xg.toFixed(1):'')+'\n\nSLIDE 3 — Best Player\n'+( mom?mom.name+' — PPI '+mom.ovr.toFixed(1):'See our full player ratings')+'\n\nSLIDE 4 — xG Story\nWho really deserved to win?\n\nSLIDE 5 — CTA\n"Full analytics at [your link in bio]"'});
+
+  // 6. TikTok / Reels script
+  a.push({t:'xg',l:'🎬 TikTok / Reels Script',
+    x:'[Hook — 0-2s]\n"'+m.home_team+' '+score+' '+m.away_team+' — but was it fair?"\n\n[Data reveal — 2-8s]\n"The xG was '+(m.home_xg?m.home_xg.toFixed(1)+' to '+m.away_xg.toFixed(1):'actually closer than the score')+'. '+unlucky+' created more danger but couldn\'t convert."\n\n[Player focus — 8-15s]\n'+(mom?'"'+mom.name+' was the standout. PPI '+mom.ovr.toFixed(1)+', '+(mom.g+mom.a)+' goal contributions, ran the show."':'"Check the full player ratings in the link."')+'\n\n[CTA — 15-20s]\n"Full breakdown on the dashboard — link in bio. Follow for every match."'});
+
+  // 7. Twitter/X thread starter
+  a.push({t:'hook',l:'🐦 Twitter/X Thread',
+    x:'🧵 '+m.home_team+' '+score+' '+m.away_team+' — full data breakdown:\n\n1/ Scoreline: '+m.home_team+' '+score+' '+m.away_team+(m.home_xg?' (xG: '+m.home_xg.toFixed(1)+' - '+m.away_xg.toFixed(1)+')':'')+'\n\n2/ Possession: '+m.home_team+' '+m.home_possession+'% dominated the ball'+(domPoss>=60?'. '+m.away_team+' were content to defend and counter.':'. A fairly even split.')+'\n\n3/ '+(mom?'MOM: '+mom.name+' (PPI '+mom.ovr.toFixed(1)+'). '+mom.g+'G/'+mom.a+'A':'Player ratings: full breakdown on the dashboard')+'\n\n4/ Full player stats, xG model and tactical breakdown → [link]\n\n#WC2026 #WorldCup'});
+
+  document.getElementById('angles').innerHTML=a.map(o=>'<div class="angle"><span class="atag at-'+o.t+'">'+o.l+'</span><div class="atxt" style="white-space:pre-line">'+o.x+'</div><button class="cpy" onclick="cpy(this,\'Copy\',\'Copied ✓\')" data-t="'+o.x.replace(/"/g,'&quot;').replace(/\n/g,'\\n')+'">Copy</button></div>').join('');
 }
-function cpy(b){navigator.clipboard.writeText(b.getAttribute('data-t')).then(()=>{b.textContent='Copied';b.classList.add('ok');setTimeout(()=>{b.textContent='Copy caption';b.classList.remove('ok');},1500);});}
+function cpy(b,defTxt,doneTxt){
+  const raw=b.getAttribute('data-t').replace(/\\n/g,'\n');
+  navigator.clipboard.writeText(raw).then(()=>{b.textContent=doneTxt||'Copied ✓';b.classList.add('ok');setTimeout(()=>{b.textContent=defTxt||'Copy';b.classList.remove('ok');},2000);});
+}
 
 function pMode(m){
   document.getElementById('pt-match').classList.toggle('active',m==='match');
@@ -729,11 +806,20 @@ function renderByPlayer(){
     '</tbody></table></div></div>';
   document.getElementById('ppProfile').innerHTML=html;
 }
-function initPlayers(){
-  document.getElementById('pmMatchSel').innerHTML=D.matches.map((m,i)=>'<option value="'+i+'">'+matchLabel(i)+'</option>').join('');
+function filterPlayers(){
+  const q=(document.getElementById('ppSearch').value||'').toLowerCase();
   const names=[...new Set(PMS.map(p=>p.name))].sort();
-  document.getElementById('ppPlayerSel').innerHTML=names.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
-  renderByMatch();renderByPlayer();
+  const filtered=q?names.filter(n=>n.toLowerCase().includes(q)):names;
+  document.getElementById('ppPlayerSel').innerHTML=filtered.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+  if(filtered.length>0)renderByPlayer();
+  else document.getElementById('ppProfile').innerHTML='<div class="empty">No players matching that name</div>';
+}
+function initPlayers(){
+  const matchesWithData=[...new Set(PMS.map(p=>p.m))].sort((a,b)=>a-b);
+  const defaultM=matchesWithData.length>0?matchesWithData[0]:0;
+  document.getElementById('pmMatchSel').innerHTML=D.matches.map((m,i)=>'<option value="'+i+'" '+(i===defaultM?'selected':'')+'>'+m.home_team+' vs '+m.away_team+'</option>').join('');
+  filterPlayers();
+  renderByMatch();
 }
 
 function buildTeam(name){
@@ -832,13 +918,33 @@ function renderBracket(){
   document.getElementById('bracket').innerHTML=html;
 }
 
-function strength(t){return t.xg*1.2+t.possession*0.03+(15-t.ppda)*0.15;}
 function predict(){
-  const a=D.teams.find(t=>t.name===document.getElementById('teamA').value),b=D.teams.find(t=>t.name===document.getElementById('teamB').value);if(!a||!b)return;
-  const diff=strength(a)-strength(b),pH=1/(1+Math.exp(-diff*0.9)),pA=1-pH,db=0.26*(1-Math.min(Math.abs(diff)*0.18,0.7));
-  let h=pH*(1-db),d=db,w=pA*(1-db),s=h+d+w;h=Math.round(h/s*100);d=Math.round(d/s*100);w=100-h-d;
+  const allTeams=[...new Set(D.matches.flatMap(x=>[x.home_team,x.away_team]))].sort();
+  const ta=document.getElementById('teamA'),tb=document.getElementById('teamB');
+  const av=ta.value,bv=tb.value;
+  if(ta.options.length!==allTeams.length){
+    const opts=allTeams.map(t=>'<option value="'+t+'">'+t+'</option>').join('');
+    ta.innerHTML=opts;tb.innerHTML=opts;
+    if(av&&allTeams.includes(av))ta.value=av;
+    if(bv&&allTeams.includes(bv))tb.value=bv;
+    else if(tb.options.length>1)tb.selectedIndex=1;
+  }
+  const agg={};
+  D.matches.forEach(m=>{
+    const add=(n,gl,xg,pos)=>{const a=agg[n]=agg[n]||{g:0,xg:0,pos:0,n:0};a.g+=(gl||0);a.xg+=(xg||0);a.pos+=(pos||50);a.n++;};
+    add(m.home_team,m.home_score,m.home_xg,m.home_possession);
+    add(m.away_team,m.away_score,m.away_xg,m.away_possession);
+  });
+  const stat=n=>{const s=agg[n]||{xg:1.2,pos:50,n:1};return{xg:s.xg/s.n,pos:s.pos/s.n};};
+  const a=stat(ta.value),b=stat(tb.value);
+  const str=s=>s.xg*1.4+(s.pos/100)*2;
+  const diff=str(a)-str(b);
+  const pH=1/(1+Math.exp(-diff*0.8)),pA=1-pH;
+  const db=0.26*(1-Math.min(Math.abs(diff)*0.2,0.7));
+  let h=Math.round(pH*(1-db)*100),d=Math.round(db*100),w=100-h-d;
   document.getElementById('pbars').innerHTML='<div class="pseg p-h" style="width:'+h+'%">'+(h>8?h+'%':'')+'</div><div class="pseg p-d" style="width:'+d+'%">'+(d>8?d+'%':'')+'</div><div class="pseg p-a" style="width:'+w+'%">'+(w>8?w+'%':'')+'</div>';
-  document.getElementById('legA').textContent=a.name+' win';document.getElementById('legB').textContent=b.name+' win';
+  document.getElementById('legA').textContent=(ta.value||'Team A')+' win';
+  document.getElementById('legB').textContent=(tb.value||'Team B')+' win';
 }
 function heatmap(){
   const M=['xG','Poss','Shots','PPDA','Goals'],C=[[1,0.55,0.74,-0.48,0.78],[0.55,1,0.62,-0.71,0.42],[0.74,0.62,1,-0.44,0.61],[-0.48,-0.71,-0.44,1,-0.39],[0.78,0.42,0.61,-0.39,1]];
@@ -851,13 +957,22 @@ function heatmap(){
 let CH={};
 const co=(x,y)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:x,color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}},y:{title:{display:true,text:y,color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}}}});
 function labCharts(){
-  const t=D.teams;Object.values(CH).forEach(c=>c&&c.destroy());
-  CH.xg=new Chart(document.getElementById('xgChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:x.xg,y:x.goals,label:x.name})),backgroundColor:'#FFC130',pointRadius:7,pointHoverRadius:9},{type:'line',data:[{x:0,y:0},{x:3,y:3}],borderColor:'rgba(255,255,255,0.15)',borderDash:[5,5],pointRadius:0,borderWidth:1}]},options:Object.assign(co('Expected Goals (xG)','Actual Goals'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label?c.raw.label+': '+c.raw.y+'G from '+c.raw.x+'xG':''}}}})});
-  CH.style=new Chart(document.getElementById('styleChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:x.possession,y:x.ppda,label:x.name})),backgroundColor:t.map(x=>x.possession>55?'#38A8FF':'#FF3B5C'),pointRadius:7,pointHoverRadius:9}]},options:Object.assign(co('Possession %','PPDA (lower = higher press)'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label+': '+c.raw.x+'% poss, '+c.raw.y+' PPDA'}}},scales:Object.assign(co('Possession %','PPDA').scales,{y:Object.assign(co('','PPDA (lower = higher press)').scales.y,{reverse:true})})})});
-  const bk={'6-7':0,'7-8':0,'8-9':0,'9-10':0,'10-11':0,'11+':0};D.ppi.forEach(p=>{const v=p.overall_ppi;if(v<7)bk['6-7']++;else if(v<8)bk['7-8']++;else if(v<9)bk['8-9']++;else if(v<10)bk['9-10']++;else if(v<11)bk['10-11']++;else bk['11+']++;});
-  CH.dist=new Chart(document.getElementById('distChart'),{type:'bar',data:{labels:Object.keys(bk),datasets:[{data:Object.values(bk),backgroundColor:'#FFC130',borderRadius:6}]},options:co('PPI range','Players')});
+  // Derive team stats from actual match data
+  const teamAgg={};
+  D.matches.forEach(m=>{
+    const add=(n,gl,xg,pos)=>{const a=teamAgg[n]=teamAgg[n]||{name:n,g:0,xg:0,pos:0,ppda:10,n:0};a.g+=(gl||0);a.xg+=(xg||0);a.pos+=(pos||50);a.n++;};
+    add(m.home_team,m.home_score,m.home_xg,m.home_possession);
+    add(m.away_team,m.away_score,m.away_xg,m.away_possession);
+  });
+  const t=Object.values(teamAgg).map(x=>({name:x.name,goals:x.g,xg:x.n?x.xg/x.n:0,possession:x.n?x.pos/x.n:50,ppda:10})).filter(x=>x.n||x.goals>=0);
+  if(!t.length)return;
+  Object.values(CH).forEach(c=>c&&c.destroy());
+  CH.xg=new Chart(document.getElementById('xgChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:parseFloat(x.xg.toFixed(2)),y:x.goals,label:x.name})),backgroundColor:'#FFC130',pointRadius:7,pointHoverRadius:9},{type:'line',data:[{x:0,y:0},{x:4,y:4}],borderColor:'rgba(255,255,255,0.15)',borderDash:[5,5],pointRadius:0,borderWidth:1}]},options:Object.assign(co('xG per game (Expected Goals)','Actual Goals'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label?c.raw.label+': '+c.raw.y+'G from '+c.raw.x+'xG':''}}}})});
+  CH.style=new Chart(document.getElementById('styleChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:x.possession,y:x.ppda,label:x.name})),backgroundColor:t.map(x=>x.possession>55?'#38A8FF':'#FF3B5C'),pointRadius:7,pointHoverRadius:9}]},options:Object.assign(co('Possession %','PPDA (↓ = high press)'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label+': '+c.raw.x+'% poss'}}}})});
+  const bk={'<7':0,'7-8':0,'8-9':0,'9-10':0,'10-11':0,'11+':0};D.ppi.forEach(p=>{const v=p.overall_ppi;if(v<7)bk['<7']++;else if(v<8)bk['7-8']++;else if(v<9)bk['8-9']++;else if(v<10)bk['9-10']++;else if(v<11)bk['10-11']++;else bk['11+']++;});
+  CH.dist=new Chart(document.getElementById('distChart'),{type:'bar',data:{labels:Object.keys(bk),datasets:[{data:Object.values(bk),backgroundColor:'#FFC130',borderRadius:6}]},options:co('PPI score range','Number of players')});
   const t4=t.slice().sort((a,b)=>b.xg-a.xg).slice(0,4),cl=['#FFC130','#38A8FF','#00E08A','#FF3B5C'];
-  CH.radar=new Chart(document.getElementById('radarChart'),{type:'radar',data:{labels:['Attack','Possession','Press','Efficiency','Goals'],datasets:t4.map((x,i)=>({label:x.name,data:[x.xg/3*10,x.possession/10,(15-x.ppda)/15*10,x.goals/Math.max(x.xg,0.1)*5,x.goals*2.5],borderColor:cl[i],backgroundColor:cl[i]+'22',borderWidth:2,pointRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}}},scales:{r:{grid:{color:'rgba(255,255,255,0.08)'},angleLines:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},ticks:{display:false},min:0,max:10}}}});
+  CH.radar=new Chart(document.getElementById('radarChart'),{type:'radar',data:{labels:['Attack (xG)','Possession','Pressing','Efficiency','Goals'],datasets:t4.map((x,i)=>({label:x.name,data:[Math.min(x.xg/3*10,10),x.possession/10,Math.min((15-x.ppda)/15*10,10),Math.min(x.goals/Math.max(x.xg,0.1)*5,10),Math.min(x.goals*2,10)],borderColor:cl[i],backgroundColor:cl[i]+'22',borderWidth:2,pointRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}}},scales:{r:{grid:{color:'rgba(255,255,255,0.08)'},angleLines:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},ticks:{display:false},min:0,max:10}}}});
 }
 
 function renderAwards(){
@@ -883,36 +998,93 @@ function renderAwards(){
 
 async function load(){
   countdown();
-  const m=await sb('matches','order=date.desc&limit=200'),pd=await sb('tournament_leaderboard','order=avg_overall_ppi.desc&limit=8');
-  const played=(m&&m.length>0)?m.length:0;
-  if(m&&m.length>0){D.isDemo=false;D.matches=m;document.getElementById('liveTxt').textContent='LIVE DATA';document.getElementById('livePill').classList.add('is-live');}
-  if(pd&&pd.length>0)D.ppi=pd.map(p=>({name:p.name,team:p.team,position:p.position,overall_ppi:p.avg_overall_ppi,total_goals:p.total_goals,total_assists:p.total_assists,matches_played:p.matches_played}));
 
-  // hero stats
+  // Fetch all live data from Supabase
+  const [m, pd, pms] = await Promise.all([
+    sb('matches','order=match_date.desc&limit=200'),
+    sb('tournament_leaderboard','order=avg_overall_ppi.desc&limit=50'),
+    sb('player_match_stats','order=match_date.desc&limit=500')
+  ]);
+
+  // Use live data if available
+  if(m&&m.length>0){
+    D.isDemo=false;
+    D.matches=m.map(x=>({
+      ...x,
+      home_team:x.home_team,away_team:x.away_team,
+      home_score:x.home_score,away_score:x.away_score,
+      home_possession:x.home_possession,away_possession:x.away_possession,
+      home_shots:x.home_shots,away_shots:x.away_shots,
+      home_xg:x.home_xg,away_xg:x.away_xg,
+      grp:x.group_name||x.grp,round:x.round||x.group_name,
+      date:x.match_date||x.date
+    }));
+    document.getElementById('liveTxt').textContent='LIVE DATA';
+    document.getElementById('livePill').classList.add('is-live');
+  }
+
+  if(pd&&pd.length>0){
+    D.ppi=pd.map(p=>({
+      name:p.name||p.player_name,
+      team:p.team,position:p.position,
+      overall_ppi:parseFloat(p.avg_overall_ppi||p.overall_ppi||0),
+      total_goals:p.total_goals||0,
+      total_assists:p.total_assists||0,
+      matches_played:p.matches_played||0,
+      age:p.age||null
+    }));
+  }
+
+  // Build PMS from real player_match_stats
+  if(pms&&pms.length>0){
+    // Build a match_id → index map from D.matches
+    const midMap={};
+    D.matches.forEach((match,idx)=>{midMap[match.match_id||match.id]=idx;});
+    PMS=pms.map(p=>({
+      m:midMap[p.match_id]??-1,
+      name:p.player_name||p.name,
+      team:p.team,
+      pos:(p.position||'M').charAt(0),
+      min:p.minutes_played||90,
+      rating:parseFloat(p.rating||0),
+      g:p.goals||0,a:p.assists||0,
+      sot:p.shots_on_target||0,
+      kp:p.key_passes||0,
+      drb:p.dribbles||0,
+      dw:p.duels_won||0,
+      dt:p.duels_total||0,
+      ppi:parseFloat(p.ppi_score||0),
+      ovr:parseFloat(p.overall_ppi||0)
+    })).filter(p=>p.m>=0);
+    // Build keepers from real data
+    const kmap={};
+    pms.filter(p=>p.position==='G'||p.position==='GK').forEach(p=>{
+      const n=p.player_name||p.name;
+      kmap[n]=kmap[n]||{name:n,team:p.team,saves:0,clean_sheets:0,save_pct:0,ppi:0,_games:0,_sp:0};
+      kmap[n].saves+=(p.saves||0);kmap[n]._games++;
+      kmap[n]._sp+=parseFloat(p.rating||0);
+      kmap[n].ppi=Math.max(kmap[n].ppi,parseFloat(p.overall_ppi||0));
+    });
+    if(Object.keys(kmap).length>0)KEEPERS=Object.values(kmap).map(k=>({...k,save_pct:Math.round(k._sp/k._games*10)}));
+  }
+
+  // Hero stats
   const realPlayed=D.isDemo?0:D.matches.length;
-  const goals=D.matches.reduce((s,x)=>s+(x.home_score||0)+(x.away_score||0),0);
+  const goals=D.isDemo?0:D.matches.reduce((s,x)=>s+(x.home_score||0)+(x.away_score||0),0);
   document.getElementById('hMatches').textContent=D.isDemo?'--':realPlayed;
   document.getElementById('hGoals').textContent=D.isDemo?'--':goals;
   document.getElementById('hAvg').textContent=(D.isDemo||!realPlayed)?'--':(goals/realPlayed).toFixed(1);
   document.getElementById('hRemain').textContent=D.isDemo?'104':(104-realPlayed);
 
-  initDateSel();
-  renderDays();
+  initDateSel();renderDays();
   document.getElementById('ppiBoard').innerHTML=ppiBoard(D.ppi);
-  const sc=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);document.getElementById('scorers').innerHTML=scorers(sc);
-  renderSpotlight();
-  renderNextMatch();
-  computeStorylines();
-
-  document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+x.home_team+' '+x.home_score+'-'+x.away_score+' '+x.away_team+'</option>').join('');
+  const sc=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
+  document.getElementById('scorers').innerHTML=scorers(sc);
+  renderSpotlight();renderNextMatch();computeStorylines();
+  document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+flag(x.home_team)+x.home_team+' '+x.home_score+'-'+x.away_score+' '+flag(x.away_team)+x.away_team+'</option>').join('');
   genContent();
-  const to=D.teams.map(t=>'<option value="'+t.name+'">'+t.name+'</option>').join('');
-  document.getElementById('teamA').innerHTML=to;document.getElementById('teamB').innerHTML=to;document.getElementById('teamB').selectedIndex=1;predict();
-  initPlayers();
-  initTeams();
-  renderStandings();
-  renderBracket();
-  renderAwards();
+  predict();
+  initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
 }
 load();
 </script>
