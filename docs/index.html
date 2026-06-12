@@ -65,6 +65,17 @@
   .spot-nm { font-weight:600; font-size:14px; }
   .spot-tm { font-size:11px; color:var(--muted); margin-top:1px; }
   .spot-val { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:24px; color:var(--gold); text-shadow:0 0 16px var(--gold-glow); }
+  .next-match { background:linear-gradient(150deg,rgba(255,193,48,0.10),transparent); border:1px solid var(--line2); border-radius:14px; padding:16px; margin-bottom:18px; }
+  .nm-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+  .nm-label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold); }
+  .nm-teams { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+  .nm-team { display:flex; flex-direction:column; align-items:center; gap:7px; flex:1; }
+  .nm-team img { width:42px; height:28px; object-fit:cover; border-radius:4px; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
+  .nm-team span { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; text-align:center; line-height:1.1; }
+  .nm-vs { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:16px; color:var(--muted); }
+  .nm-info { text-align:center; border-top:1px solid var(--line); padding-top:10px; }
+  .nm-time { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--text); }
+  .nm-venue { font-size:11px; color:var(--muted); margin-top:3px; }
   .hero-eyebrow { display:flex; align-items:center; gap:12px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
   .hero-eyebrow .flags { display:flex; gap:4px; }
   .hero-eyebrow .flags i { width:18px; height:12px; border-radius:2px; display:inline-block; }
@@ -145,8 +156,9 @@
   .scr-rk { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:20px; color:var(--dim); width:26px; }
   .scr-rk.top { color:var(--gold); }
   .scr-n { flex:1; font-weight:600; font-size:14px; } .scr-tm { font-size:11px; color:var(--muted); }
-  .scr-g { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:24px; color:var(--green); min-width:28px; text-align:right; }
-  .scr-a { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); min-width:34px; text-align:right; }
+  .scr-g { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:26px; color:var(--green); min-width:46px; text-align:right; display:flex; align-items:baseline; justify-content:flex-end; gap:3px; }
+  .scr-glbl { font-size:11px; color:var(--muted); font-weight:600; }
+  .scr-a { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); min-width:50px; text-align:right; letter-spacing:0.04em; }
 
   /* STAT BOXES */
   .sbox { position:relative; background:linear-gradient(160deg,var(--surf2),var(--surf1)); border:1px solid var(--line); border-radius:16px; padding:22px; overflow:hidden; }
@@ -198,6 +210,15 @@
 
   .empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
 
+  /* AWARDS */
+  .award-note { font-size:12px; color:var(--muted); padding:12px 20px 4px; line-height:1.5; }
+  .awtbl th { text-align:center; } .awtbl th:nth-child(2) { text-align:left; }
+  .awtbl td { text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; }
+  .awtbl td:nth-child(2) { text-align:left; font-family:'Inter',sans-serif; font-weight:600; }
+  .awtbl .aw-g { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:20px; color:var(--green); }
+  .awtbl .aw-s { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:18px; color:var(--gold); text-shadow:0 0 14px var(--gold-glow); }
+  .awtbl tbody tr:first-child td { background:rgba(255,193,48,0.05); }
+
   /* horizontally scrollable table wrapper (so wide tables aren't trapped off-screen) */
   .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .tblwrap::-webkit-scrollbar { height:6px; }
@@ -212,7 +233,12 @@
   .pt-btn:hover { color:var(--text); }
   .pt-btn.active { color:#1a1200; background:linear-gradient(135deg,var(--gold),var(--gold2)); }
   .ptbl th, .ptbl td { padding:11px 12px; }
+  .ptbl th { text-align:center; }
+  .ptbl th:nth-child(1), .ptbl th:nth-child(2) { text-align:left; }
+  .ptbl td { text-align:center; }
+  .ptbl td:nth-child(1), .ptbl td:nth-child(2) { text-align:left; }
   .ptbl td.num, .ptbl th.num { text-align:center; font-family:'JetBrains Mono',monospace; }
+  .ptbl .ppi, .ptbl .pos { font-family:inherit; }
   .pp-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; background:linear-gradient(160deg,var(--surf2),var(--surf1)); border:1px solid var(--line); border-radius:18px; padding:24px; margin-bottom:16px; flex-wrap:wrap; position:relative; overflow:hidden; }
   .pp-hero::before { content:''; position:absolute; top:-2px; right:-30px; width:130px; height:8px; transform:skewX(-24deg); background:linear-gradient(90deg,var(--red),var(--green),var(--blue)); opacity:0.85; }
   .pp-name { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:38px; line-height:1; letter-spacing:0.01em; }
@@ -304,11 +330,12 @@
       <div class="hero-stats">
         <div class="hstat s-gold fade d2"><div class="hstat-num" id="hMatches">--</div><div class="hstat-lbl">Matches played</div></div>
         <div class="hstat s-green fade d3"><div class="hstat-num" id="hGoals">--</div><div class="hstat-lbl">Goals scored</div></div>
-        <div class="hstat s-blue fade d3"><div class="hstat-num" id="hPPI">--</div><div class="hstat-lbl">Top tournament PPI</div></div>
-        <div class="hstat s-red fade d4"><div class="hstat-num" id="hCount">--</div><div class="hstat-lbl" id="hCountLbl">Days to kickoff</div></div>
+        <div class="hstat s-blue fade d3"><div class="hstat-num" id="hAvg">--</div><div class="hstat-lbl">Avg goals / match</div></div>
+        <div class="hstat s-red fade d4"><div class="hstat-num" id="hRemain">--</div><div class="hstat-lbl">Matches to play</div></div>
       </div>
     </div>
     <div class="hero-spot fade d3">
+      <div class="next-match" id="nextMatch"></div>
       <div class="spot-h">Top performers <span>PPI</span></div>
       <div id="spotList"></div>
     </div>
@@ -320,6 +347,7 @@
     <button class="tab active" onclick="tab('overview',this)">Overview</button>
     <button class="tab" onclick="tab('standings',this)">Standings</button>
     <button class="tab" onclick="tab('bracket',this)">Bracket</button>
+    <button class="tab" onclick="tab('awards',this)">Awards</button>
     <button class="tab" onclick="tab('players',this)">Players</button>
     <button class="tab" onclick="tab('teams',this)">Teams</button>
     <button class="tab" onclick="tab('content',this)">Content Studio</button>
@@ -339,7 +367,7 @@
         <div class="tblwrap"><table class="tbl"><thead><tr><th>#</th><th>Player</th><th>Pos</th><th>PPI</th><th></th></tr></thead><tbody id="ppiBoard"></tbody></table></div>
       </div>
       <div class="card">
-        <div class="card-h"><div class="card-t">Golden Boot Race</div><div class="card-s">GOALS / ASSISTS</div></div>
+        <div class="card-h"><div class="card-t">Golden Boot Race</div><div class="card-s">MOST GOALS</div></div>
         <div class="card-b"><div id="scorers"></div></div>
       </div>
     </div>
@@ -368,6 +396,35 @@
     <div class="sec-head">Knockout bracket</div>
     <div class="lab-note" id="brNote"><b>Round of 32 onwards.</b> The bracket populates automatically once the group stage finishes and qualified teams are confirmed. Until then, slots show TBD.</div>
     <div class="bracket" id="bracket"></div>
+  </div>
+
+  <div class="pane" id="p-awards">
+    <div class="sec-head">Individual award races</div>
+    <div class="lab-note" style="margin-bottom:22px;">Live contention tables for the four major World Cup individual awards, each ranked by its actual FIFA criteria. Updates automatically after every match.</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-h"><div class="card-t">🥇 Golden Boot</div><div class="card-s">MOST GOALS</div></div>
+        <div class="award-note">Top scorer. Ties broken by assists, then fewer minutes played.</div>
+        <div class="tblwrap"><table class="tbl awtbl"><thead><tr><th>#</th><th>Player</th><th>Goals</th><th>Ast</th><th>Min</th></tr></thead><tbody id="awBoot"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div class="card-t">⚽ Golden Ball</div><div class="card-s">BEST PLAYER &middot; PPI</div></div>
+        <div class="award-note">Best overall player, by total influence. Ranked on our Player Performance Index.</div>
+        <div class="tblwrap"><table class="tbl awtbl"><thead><tr><th>#</th><th>Player</th><th>Pos</th><th>PPI</th><th>G+A</th></tr></thead><tbody id="awBall"></tbody></table></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-h"><div class="card-t">🧤 Golden Glove</div><div class="card-s">BEST GOALKEEPER</div></div>
+        <div class="award-note">Best keeper. Not clean sheets alone &mdash; a blend of saves, save %, clean sheets and rating.</div>
+        <div class="tblwrap"><table class="tbl awtbl"><thead><tr><th>#</th><th>Keeper</th><th>Sv</th><th>Sv%</th><th>CS</th><th>Score</th></tr></thead><tbody id="awGlove"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div class="card-t">⭐ Young Player</div><div class="card-s">U-21 &middot; PPI</div></div>
+        <div class="award-note">Best young player (under 21). Ranked on Player Performance Index.</div>
+        <div class="tblwrap"><table class="tbl awtbl"><thead><tr><th>#</th><th>Player</th><th>Age</th><th>PPI</th><th>G+A</th></tr></thead><tbody id="awYoung"></tbody></table></div>
+      </div>
+    </div>
   </div>
 
   <div class="pane" id="p-players">
@@ -488,14 +545,22 @@ const DEMO_MATCHES=[
   {home_team:'Ghana',away_team:'Panama',home_score:1,away_score:1,home_possession:52,away_possession:48,home_shots:10,away_shots:9,home_xg:1.2,away_xg:1.0,round:'Group L',grp:'L',date:'2026-06-16'},
 ];
 const DEMO_PPI=[
-  {name:"K. Mbappe",team:"France",position:"F",overall_ppi:12.4,total_goals:2,total_assists:1,matches_played:1},
-  {name:"L. Messi",team:"Argentina",position:"F",overall_ppi:11.8,total_goals:1,total_assists:1,matches_played:1},
-  {name:"J. Bellingham",team:"England",position:"M",overall_ppi:11.2,total_goals:1,total_assists:0,matches_played:1},
-  {name:"Vinicius Jr.",team:"Brazil",position:"F",overall_ppi:10.9,total_goals:0,total_assists:2,matches_played:1},
-  {name:"L. Yamal",team:"Spain",position:"F",overall_ppi:10.8,total_goals:1,total_assists:1,matches_played:1},
-  {name:"J. Musiala",team:"Germany",position:"M",overall_ppi:10.6,total_goals:1,total_assists:1,matches_played:1},
-  {name:"B. Fernandes",team:"Portugal",position:"M",overall_ppi:10.4,total_goals:0,total_assists:1,matches_played:1},
-  {name:"Dibu Martinez",team:"Argentina",position:"G",overall_ppi:10.2,total_goals:0,total_assists:0,matches_played:1},
+  {name:"K. Mbappe",team:"France",position:"F",overall_ppi:12.4,total_goals:2,total_assists:1,matches_played:1,age:27},
+  {name:"L. Messi",team:"Argentina",position:"F",overall_ppi:11.8,total_goals:1,total_assists:1,matches_played:1,age:38},
+  {name:"J. Bellingham",team:"England",position:"M",overall_ppi:11.2,total_goals:1,total_assists:0,matches_played:1,age:22},
+  {name:"Vinicius Jr.",team:"Brazil",position:"F",overall_ppi:10.9,total_goals:0,total_assists:2,matches_played:1,age:25},
+  {name:"L. Yamal",team:"Spain",position:"F",overall_ppi:10.8,total_goals:1,total_assists:1,matches_played:1,age:18},
+  {name:"J. Musiala",team:"Germany",position:"M",overall_ppi:10.6,total_goals:1,total_assists:1,matches_played:1,age:23},
+  {name:"B. Fernandes",team:"Portugal",position:"M",overall_ppi:10.4,total_goals:0,total_assists:1,matches_played:1,age:31},
+  {name:"Dibu Martinez",team:"Argentina",position:"G",overall_ppi:10.2,total_goals:0,total_assists:0,matches_played:1,age:33,saves:5,clean_sheets:0,save_pct:83},
+];
+// keeper-specific demo (Golden Glove contention)
+const DEMO_KEEPERS=[
+  {name:'G. Donnarumma',team:'Italy',saves:6,clean_sheets:1,save_pct:100,ppi:10.4},
+  {name:'Dibu Martinez',team:'Argentina',saves:5,clean_sheets:0,save_pct:83,ppi:10.2},
+  {name:'J. Oblak',team:'Slovenia',saves:7,clean_sheets:1,save_pct:88,ppi:10.0},
+  {name:'M. Maignan',team:'France',saves:3,clean_sheets:1,save_pct:100,ppi:9.6},
+  {name:'Ederson',team:'Brazil',saves:4,clean_sheets:0,save_pct:80,ppi:9.2},
 ];
 const DEMO_TEAMS=[
   {name:'France',xg:2.8,goals:3,possession:67,ppda:7.2},{name:'Spain',xg:2.8,goals:3,possession:70,ppda:6.5},
@@ -505,6 +570,14 @@ const DEMO_TEAMS=[
   {name:'Morocco',xg:1.2,goals:1,possession:42,ppda:12.3},{name:'Uruguay',xg:1.6,goals:1,possession:59,ppda:9.5},
 ];
 let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
+
+// upcoming fixtures (next match panel) — replaced by live api-football data
+const DEMO_UPCOMING=[
+  {home:'Mexico',away:'South Africa',date:'2026-06-11T20:00:00Z',venue:'Estadio Azteca, Mexico City'},
+  {home:'Canada',away:'Bosnia and Herzegovina',date:'2026-06-12T23:00:00Z',venue:'BMO Field, Toronto'},
+  {home:'United States',away:'Paraguay',date:'2026-06-12T20:00:00Z',venue:'SoFi Stadium, Los Angeles'},
+];
+let UPCOMING=DEMO_UPCOMING;
 
 // player-match-stats demo (m = index into matches)
 const DEMO_PMS=[
@@ -529,13 +602,11 @@ const DEMO_PMS=[
   {m:8,name:'F. Wirtz',team:'Germany',pos:'M',min:90,rating:8.3,g:1,a:1,sot:2,kp:4,drb:4,dw:5,dt:8,ppi:8.0,ovr:10.2},
 ];
 let PMS=DEMO_PMS;
+let KEEPERS=DEMO_KEEPERS;
 
 function countdown(){
   const diff=new Date('2026-06-11T20:00:00Z')-new Date();
-  const el=document.getElementById('hCount'),lb=document.getElementById('hCountLbl');
-  if(diff<=0){el.textContent='LIVE';lb.textContent='Tournament live';
-    document.getElementById('livePill').classList.add('is-live');document.getElementById('liveTxt').textContent='LIVE';}
-  else{el.textContent=Math.floor(diff/86400000);lb.textContent='Days to kickoff';}
+  if(diff<=0){document.getElementById('livePill').classList.add('is-live');document.getElementById('liveTxt').textContent='LIVE';}
 }
 async function sb(t,p){try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?'+p,{headers});if(!r.ok)return null;return await r.json();}catch{return null;}}
 function tab(n,b){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('p-'+n).classList.add('active');b.classList.add('active');if(n==='lab')setTimeout(()=>{labCharts();heatmap();},40);}
@@ -552,7 +623,7 @@ function mCard(m,demo){
     '</div></div>';
 }
 function ppiBoard(pl){const mx=pl[0]?.overall_ppi||12;return pl.map((p,i)=>'<tr><td class="rk '+(i===0?'top':'')+'">'+(i+1)+'</td><td><div class="pn">'+p.name+'</div><div class="ptm">'+p.team+' / '+p.matches_played+'G</div></td><td><span class="pos pos-'+p.position+'">'+p.position+'</span></td><td><span class="ppi">'+p.overall_ppi.toFixed(1)+'</span></td><td><div class="ppibar"><i style="width:'+(p.overall_ppi/mx*100)+'%"></i></div></td></tr>').join('');}
-function scorers(pl){if(!pl.length)return '<div class="empty">No goals yet &mdash; check back after kickoff</div>';return pl.map((p,i)=>'<div class="scr"><div class="scr-rk '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="scr-n">'+p.name+'</div><div class="scr-tm">'+p.team+'</div></div><div class="scr-g">'+p.total_goals+'</div><div class="scr-a">+'+p.total_assists+'</div></div>').join('');}
+function scorers(pl){if(!pl.length)return '<div class="empty">No goals yet &mdash; check back after kickoff</div>';return pl.map((p,i)=>'<div class="scr"><div class="scr-rk '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="scr-n">'+flag(p.team)+p.name+'</div><div class="scr-tm">'+p.team+'</div></div><div class="scr-g">'+p.total_goals+'<span class="scr-glbl">G</span></div><div class="scr-a">'+p.total_assists+' AST</div></div>').join('');}
 
 function fmtDay(d){
   if(d==='TBD')return{tag:'Upcoming',sub:''};
@@ -565,6 +636,22 @@ function renderSpotlight(){
   const top=D.ppi.slice(0,4);
   el.innerHTML=top.map((p,i)=>'<div class="spot-row"><div class="spot-rank '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="spot-nm">'+p.name+'</div><div class="spot-tm">'+p.team+'</div></div><div class="spot-val">'+p.overall_ppi.toFixed(1)+'</div></div>').join('');
 }
+function renderNextMatch(){
+  const el=document.getElementById('nextMatch');if(!el)return;
+  const now=new Date();
+  const next=UPCOMING.map(m=>({...m,d:new Date(m.date)})).filter(m=>m.d>now).sort((a,b)=>a.d-b.d)[0]||UPCOMING.map(m=>({...m,d:new Date(m.date)})).sort((a,b)=>a.d-b.d)[0];
+  if(!next){el.style.display='none';return;}
+  const opts={weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'};
+  const when=next.d.toLocaleString(undefined,opts);
+  el.innerHTML='<div class="nm-label">Next match</div>'+
+    '<div class="nm-teams">'+
+    '<div class="nm-team">'+flagImg(next.home)+'<span>'+next.home+'</span></div>'+
+    '<div class="nm-vs">VS</div>'+
+    '<div class="nm-team">'+flagImg(next.away)+'<span>'+next.away+'</span></div>'+
+    '</div>'+
+    '<div class="nm-info"><div class="nm-time">'+when+'</div><div class="nm-venue">'+(next.venue||'')+'</div></div>';
+}
+function flagImg(n){const c=FLAGS[n];return c?'<img src="https://flagcdn.com/w80/'+c+'.png" alt="">':'<span style="width:42px;height:28px"></span>';}
 function renderDays(){
   const sel=document.getElementById('dateSel');
   const filt=sel?sel.value:'all';
@@ -629,7 +716,7 @@ function renderByPlayer(){
   const g0=games[0],totG=games.reduce((s,x)=>s+x.g,0),totA=games.reduce((s,x)=>s+x.a,0);
   const avgPPI=(games.reduce((s,x)=>s+x.ovr,0)/games.length).toFixed(1);
   const posCol={F:'pos-F',M:'pos-M',D:'pos-D',G:'pos-G'}[g0.pos];
-  let html='<div class="pp-hero"><div><div class="pp-name">'+name+'<span class="pos '+posCol+' pp-pos">'+g0.pos+'</span></div><div class="pp-meta">'+g0.team+'</div></div>'+
+  let html='<div class="pp-hero"><div><div class="pp-name">'+flag(g0.team)+name+'<span class="pos '+posCol+' pp-pos">'+g0.pos+'</span></div><div class="pp-meta">'+g0.team+'</div></div>'+
     '<div class="pp-totals">'+
     '<div class="pp-tot"><div class="pp-tot-n" style="color:var(--gold);text-shadow:0 0 18px var(--gold-glow)">'+avgPPI+'</div><div class="pp-tot-l">Avg PPI</div></div>'+
     '<div class="pp-tot"><div class="pp-tot-n" style="color:var(--green)">'+totG+'</div><div class="pp-tot-l">Goals</div></div>'+
@@ -773,20 +860,48 @@ function labCharts(){
   CH.radar=new Chart(document.getElementById('radarChart'),{type:'radar',data:{labels:['Attack','Possession','Press','Efficiency','Goals'],datasets:t4.map((x,i)=>({label:x.name,data:[x.xg/3*10,x.possession/10,(15-x.ppda)/15*10,x.goals/Math.max(x.xg,0.1)*5,x.goals*2.5],borderColor:cl[i],backgroundColor:cl[i]+'22',borderWidth:2,pointRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}}},scales:{r:{grid:{color:'rgba(255,255,255,0.08)'},angleLines:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},ticks:{display:false},min:0,max:10}}}});
 }
 
+function renderAwards(){
+  // Golden Boot — goals, then assists, then fewer minutes
+  const boot=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
+  const bb=document.getElementById('awBoot');
+  bb.innerHTML=boot.length?boot.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td><span class="aw-g">'+p.total_goals+'</span></td><td>'+p.total_assists+'</td><td>'+(p.matches_played*90)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No goals yet</div></td></tr>';
+
+  // Golden Ball — best player by PPI
+  const ball=D.ppi.slice().sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
+  document.getElementById('awBall').innerHTML=ball.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td><span class="pos pos-'+p.position+'">'+p.position+'</span></td><td><span class="aw-s">'+p.overall_ppi.toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join('');
+
+  // Golden Glove — composite of save%, saves, clean sheets, ppi
+  const ks=(typeof KEEPERS!=='undefined'?KEEPERS:DEMO_KEEPERS).slice();
+  ks.forEach(k=>{k.score=(k.save_pct/100*3)+(k.saves*0.25)+(k.clean_sheets*2)+(k.ppi*0.3);});
+  ks.sort((a,b)=>b.score-a.score);
+  document.getElementById('awGlove').innerHTML=ks.slice(0,6).map((k,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(k.team)+k.name+'</td><td>'+k.saves+'</td><td>'+k.save_pct+'%</td><td>'+k.clean_sheets+'</td><td><span class="aw-s">'+k.score.toFixed(1)+'</span></td></tr>').join('');
+
+  // Young Player — under 21, by PPI
+  const young=D.ppi.filter(p=>p.age&&p.age<=21).sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
+  document.getElementById('awYoung').innerHTML=young.length?young.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td>'+p.age+'</td><td><span class="aw-s">'+p.overall_ppi.toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No U-21 data yet</div></td></tr>';
+}
+
 async function load(){
   countdown();
-  const m=await sb('matches','order=date.desc&limit=6'),pd=await sb('tournament_leaderboard','order=avg_overall_ppi.desc&limit=8');
-  if(m&&m.length>0){D.isDemo=false;D.matches=m;document.getElementById('liveTxt').textContent='LIVE DATA';document.getElementById('livePill').classList.add('is-live');
-    document.getElementById('hMatches').textContent=m.length;document.getElementById('hGoals').textContent=m.reduce((s,x)=>s+(x.home_score||0)+(x.away_score||0),0);}
-  else{document.getElementById('hMatches').textContent='--';document.getElementById('hGoals').textContent='--';}
+  const m=await sb('matches','order=date.desc&limit=200'),pd=await sb('tournament_leaderboard','order=avg_overall_ppi.desc&limit=8');
+  const played=(m&&m.length>0)?m.length:0;
+  if(m&&m.length>0){D.isDemo=false;D.matches=m;document.getElementById('liveTxt').textContent='LIVE DATA';document.getElementById('livePill').classList.add('is-live');}
   if(pd&&pd.length>0)D.ppi=pd.map(p=>({name:p.name,team:p.team,position:p.position,overall_ppi:p.avg_overall_ppi,total_goals:p.total_goals,total_assists:p.total_assists,matches_played:p.matches_played}));
+
+  // hero stats
+  const realPlayed=D.isDemo?0:D.matches.length;
+  const goals=D.matches.reduce((s,x)=>s+(x.home_score||0)+(x.away_score||0),0);
+  document.getElementById('hMatches').textContent=D.isDemo?'--':realPlayed;
+  document.getElementById('hGoals').textContent=D.isDemo?'--':goals;
+  document.getElementById('hAvg').textContent=(D.isDemo||!realPlayed)?'--':(goals/realPlayed).toFixed(1);
+  document.getElementById('hRemain').textContent=D.isDemo?'104':(104-realPlayed);
 
   initDateSel();
   renderDays();
   document.getElementById('ppiBoard').innerHTML=ppiBoard(D.ppi);
-  const sc=D.ppi.filter(p=>p.total_goals>0).slice(0,6);document.getElementById('scorers').innerHTML=scorers(sc);
-  document.getElementById('hPPI').textContent=D.ppi[0]?.overall_ppi.toFixed(1)||'--';
+  const sc=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);document.getElementById('scorers').innerHTML=scorers(sc);
   renderSpotlight();
+  renderNextMatch();
   computeStorylines();
 
   document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+x.home_team+' '+x.home_score+'-'+x.away_score+' '+x.away_team+'</option>').join('');
@@ -797,6 +912,7 @@ async function load(){
   initTeams();
   renderStandings();
   renderBracket();
+  renderAwards();
 }
 load();
 </script>
