@@ -524,7 +524,7 @@
 <footer class="foot"><span>World Cup 2026 Analytics &nbsp;&middot;&nbsp; by <em>Lutuf Abdulla</em></span></footer>
 
 <script>
-// UI Protection Utility (Patched to handle 0 correctly)
+// UI Protection Utility
 const escapeText = (str) => {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -591,7 +591,6 @@ const DEMO_PPI=[
   {name:"B. Fernandes",team:"Portugal",position:"M",overall_ppi:10.4,total_goals:0,total_assists:1,matches_played:1,age:31},
   {name:"Dibu Martinez",team:"Argentina",position:"G",overall_ppi:10.2,total_goals:0,total_assists:0,matches_played:1,age:33,saves:5,clean_sheets:0,save_pct:83},
 ];
-// keeper-specific demo (Golden Glove contention)
 const DEMO_KEEPERS=[
   {name:'G. Donnarumma',team:'Italy',saves:6,clean_sheets:1,save_pct:100,ppi:10.4},
   {name:'Dibu Martinez',team:'Argentina',saves:5,clean_sheets:0,save_pct:83,ppi:10.2},
@@ -606,9 +605,8 @@ const DEMO_TEAMS=[
   {name:'England',xg:1.9,goals:2,possession:58,ppda:8.4},{name:'Portugal',xg:1.9,goals:2,possession:60,ppda:8.0},
   {name:'Morocco',xg:1.2,goals:1,possession:42,ppda:12.3},{name:'Uruguay',xg:1.6,goals:1,possession:59,ppda:9.5},
 ];
-let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
+let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true,standings:[]};
 
-// All 48 real WC2026 teams with correct groups
 const ALL_TEAMS={
   A:['Mexico','South Africa','South Korea','Czechia'],
   B:['Canada','Switzerland','Qatar','Bosnia and Herzegovina'],
@@ -623,7 +621,7 @@ const ALL_TEAMS={
   K:['Portugal','Uzbekistan','Colombia','DR Congo'],
   L:['England','Croatia','Ghana','Panama']
 };
-// Full WC2026 group stage schedule (UTC times)
+
 const FULL_SCHEDULE=[
   {home:'Mexico',away:'South Africa',date:'2026-06-11T19:00:00Z',venue:'Estadio Azteca, Mexico City',grp:'A'},
   {home:'South Korea',away:'Czechia',date:'2026-06-12T00:00:00Z',venue:'Guadalajara Stadium, Mexico',grp:'A'},
@@ -653,7 +651,6 @@ const FULL_SCHEDULE=[
 const DEMO_UPCOMING=FULL_SCHEDULE;
 let UPCOMING=DEMO_UPCOMING;
 
-// player-match-stats demo
 const DEMO_PMS=[
   {m:4,name:'Vinicius Jr.',team:'Brazil',pos:'F',min:90,rating:8.7,g:1,a:2,sot:4,kp:5,drb:8,dw:6,dt:11,ppi:8.3,ovr:10.9},
   {m:4,name:'Raphinha',team:'Brazil',pos:'F',min:90,rating:8.2,g:2,a:0,sot:4,kp:2,drb:3,dw:4,dt:7,ppi:8.0,ovr:10.5},
@@ -678,14 +675,6 @@ const DEMO_PMS=[
 let PMS=DEMO_PMS;
 let KEEPERS=DEMO_KEEPERS;
 
-// Build reverse lookup: team name → group letter
-const TEAM_GROUP={};
-Object.entries(ALL_TEAMS).forEach(([L,teams])=>teams.forEach(t=>TEAM_GROUP[t]=L));
-function getGroup(m){
-  let rawGroup = m.grp||m.group_name||m.group||TEAM_GROUP[m.home_team]||TEAM_GROUP[m.away_team]||'?';
-  return String(rawGroup).replace(/Group\s+/i, '').trim();
-}
-
 function countdown(){
   const diff=new Date('2026-06-11T20:00:00Z')-new Date();
   if(diff<=0){document.getElementById('livePill').classList.add('is-live');document.getElementById('liveTxt').textContent='LIVE';}
@@ -703,7 +692,7 @@ function tab(n,b){
     const btn = document.querySelector(`.nav-tabs .tab[onclick*="${n}"]`);
     if(btn) btn.classList.add('active');
   }
-  localStorage.setItem('wc2026_tab', n); // Saves tab state to browser memory
+  localStorage.setItem('wc2026_tab', n);
   if(n==='lab') setTimeout(()=>{labCharts();heatmap();},40);
 }
 
@@ -933,128 +922,89 @@ function initTeams(){
   renderTeam();
 }
 
-// UPDATED STANDINGS LOGIC: Safely maps groups, removes "Group" keyword, prevents NaN crashing
-function computeStandings() {
-  const G = {};
-  Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
-    G[L] = {};
-    teams.forEach(n => {
-      G[L][n] = { name: n, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
-    });
-  });
 
-  if (D.isDemo) return G;
-
-  D.matches.forEach(m => {
-    if (!m || !m.home_team || !m.away_team) return;
-    const g = getGroup(m);
-    if (!G[g]) G[g] = {};
-
-    const ht = m.home_team;
-    const at = m.away_team;
-    
-    if (!G[g][ht]) G[g][ht] = { name: ht, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
-    if (!G[g][at]) G[g][at] = { name: at, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
-
-    const hs = parseInt(m.home_score);
-    const as = parseInt(m.away_score);
-
-    // Only add points if the score isn't null/NaN
-    if (!isNaN(hs) && !isNaN(as)) {
-      G[g][ht].p++; G[g][at].p++;
-      G[g][ht].gf += hs; G[g][ht].ga += as;
-      G[g][at].gf += as; G[g][at].ga += hs;
-
-      if (hs > as) { G[g][ht].w++; G[g][ht].pts += 3; G[g][at].l++; }
-      else if (hs < as) { G[g][at].w++; G[g][at].pts += 3; G[g][ht].l++; }
-      else { G[g][ht].d++; G[g][at].d++; G[g][ht].pts++; G[g][at].pts++; }
-    }
-  });
-  return G;
-}
-
+// UPDATED STANDINGS LOGIC
+// Maps directly from the D.standings array loaded from the API via Supabase
 function renderStandings() {
   const el = document.getElementById('grpGrid');
   if (!el) return;
-  try {
-    const G = computeStandings();
-    const letters = Object.keys(G).sort();
-    if (!letters.length) {
-      el.innerHTML = '<div class="empty">Standings appear once matches are played</div>';
+  
+  let G = {};
+  
+  // Use Demo data if no API standings are loaded
+  if (!D.standings || !D.standings.length) {
+    if (D.isDemo) {
+      Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
+        G[L] = [];
+        teams.forEach((n, i) => {
+          G[L].push({ team_name: n, group_name: L, rank: i+1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0 });
+        });
+      });
+    } else {
+      el.innerHTML = '<div class="empty">Standings appear once synced from API</div>';
       return;
     }
-    let html = '';
-    letters.forEach(L => {
-      const rows = Object.values(G[L]).sort((a, b) => {
-        if (b.pts !== a.pts) return b.pts - a.pts;
-        const gdA = a.gf - a.ga;
-        const gdB = b.gf - b.ga;
-        if (gdB !== gdA) return gdB - gdA;
-        return b.gf - a.gf;
-      });
-      
-      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-        rows.map((t, i) => {
-          const cls = i < 2 ? 'qual' : i === 2 ? 'third' : 'out';
-          const gd = t.gf - t.ga;
-          const gdStr = gd > 0 ? '+' + gd : gd;
-          return '<tr class="'+cls+'"><td>'+flag(t.name)+escapeText(t.name)+'</td>'+
-                 '<td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td>'+
-                 '<td>'+gdStr+'</td><td class="pts">'+t.pts+'</td></tr>';
-        }).join('') + '</tbody></table></div>';
+  } else {
+    // Map the real API Standings into Group buckets
+    D.standings.forEach(t => {
+      const L = t.group_name;
+      if (!G[L]) G[L] = [];
+      G[L].push(t);
     });
-    el.innerHTML = html;
-    renderThirdPlace(G);
-  } catch (err) {
-    el.innerHTML = '<div class="empty">Error calculating standings</div>';
-    console.error("Standings Error:", err);
   }
+
+  let html = '';
+  // Sort Group A to L
+  Object.keys(G).sort().forEach(L => {
+    // Sort teams by official API rank
+    const rows = G[L].sort((a,b) => a.rank - b.rank);
+    
+    html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
+      '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+      rows.map((t, i) => {
+        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+        const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+        return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+               '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
+               '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  });
+  el.innerHTML = html;
+  renderThirdPlace(G);
 }
 
 function renderThirdPlace(G) {
   const tb = document.getElementById('thirdBody');
   if (!tb) return;
-  try {
-    const thirds = [];
-    Object.keys(G).forEach(L => {
-      const rows = Object.values(G[L]).sort((a, b) => {
-        if (b.pts !== a.pts) return b.pts - a.pts;
-        const gdA = a.gf - a.ga;
-        const gdB = b.gf - b.ga;
-        if (gdB !== gdA) return gdB - gdA;
-        return b.gf - a.gf;
-      });
-      // Safety check: Make sure rows[2] actually exists and has played
-      if (rows.length >= 3 && rows[2] && rows[2].p > 0) {
-        thirds.push({ ...rows[2], grp: L });
-      }
-    });
-
-    if (thirds.length === 0) {
-      tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
-      return;
+  
+  const thirds = [];
+  Object.keys(G).forEach(L => {
+    const rows = G[L].sort((a,b) => a.rank - b.rank);
+    // Grab the 3rd place team if they have actually played
+    if (rows.length >= 3 && rows[2].played > 0) {
+      thirds.push({...rows[2], group_name: L});
     }
+  });
 
-    thirds.sort((a, b) => {
-      if (b.pts !== a.pts) return b.pts - a.pts;
-      const gdA = a.gf - a.ga;
-      const gdB = b.gf - b.ga;
-      if (gdB !== gdA) return gdB - gdA;
-      return b.gf - a.gf;
-    });
-
-    tb.innerHTML = thirds.map((t, i) => {
-      const adv = i < 8; 
-      const gd = t.gf - t.ga;
-      const gdStr = gd > 0 ? '+' + gd : gd;
-      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name)+escapeText(t.name)+'</td>'+
-             '<td>'+escapeText(t.grp)+'</td><td>'+t.p+'</td><td>'+gdStr+'</td>'+
-             '<td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
-    }).join('');
-  } catch (err) {
-    console.error("Third Place Error:", err);
+  if (!thirds.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
+    return;
   }
+
+  // Rank the 3rd place teams against each other
+  thirds.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+    return b.goals_for - a.goals_for;
+  });
+
+  tb.innerHTML = thirds.map((t, i) => {
+    const adv = i < 8; 
+    const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+           '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
+           '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
+  }).join('');
 }
 
 function renderBracket(){
@@ -1111,7 +1061,6 @@ function heatmap(){
 let CH={};
 const co=(x,y)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:x,color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}},y:{title:{display:true,text:y,color:'#8A93A8',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#8A93A8',font:{family:'JetBrains Mono',size:10}}}}});
 function labCharts(){
-  // Derive team stats from actual match data
   const teamAgg={};
   D.matches.forEach(m=>{
     const add=(n,gl,xg,pos)=>{const a=teamAgg[n]=teamAgg[n]||{name:n,g:0,xg:0,pos:0,ppda:10,n:0};a.g+=(gl||0);a.xg+=(xg||0);a.pos+=(pos||50);a.n++;};
@@ -1149,11 +1098,17 @@ function renderAwards(){
 async function load(){
   countdown();
 
-  const [m, pd, pms] = await Promise.all([
+  // ADDED STANDINGS FETCH
+  const [m, pd, pms, st] = await Promise.all([
     sb('matches','select=*&limit=200'),
     sb('tournament_leaderboard','select=*&order=avg_overall_ppi.desc&limit=100'),
-    sb('player_match_stats','select=*&limit=1000')
+    sb('player_match_stats','select=*&limit=1000'),
+    sb('standings','select=*&limit=100')
   ]);
+
+  if(st && st.length > 0) {
+    D.standings = st;
+  }
 
   if(m&&m.length>0){
     D.isDemo=false;
@@ -1258,10 +1213,9 @@ async function load(){
   initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
 }
 
-// RESTORES THE LAST VIEWED TAB
+// RESTORE SAVED TAB ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
   const savedTab = localStorage.getItem('wc2026_tab') || 'overview';
-  // Give the UI a tiny delay to ensure everything is rendered before switching
   setTimeout(() => tab(savedTab, null), 50);
 });
 
