@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-WC2026 Analytics Pipeline (Patched)
+WC2026 Analytics Pipeline
 Runs every 30 mins via GitHub Actions
-Fetches finished World Cup matches → calculates PPI → saves to Supabase
+Fetches finished World Cup matches & Official Standings → saves to Supabase
 """
 
 import os
@@ -47,7 +47,6 @@ def calculate_ppi(stats, position):
     gm  = stats.get('games', {})       or {}
     gk  = stats.get('goalkeeper', {})  or {}
 
-    # Raw values
     rating        = float(gm.get('rating') or 0)
     goals         = int(g.get('total') or 0)
     assists       = int(g.get('assists') or 0)
@@ -65,13 +64,11 @@ def calculate_ppi(stats, position):
     saves         = int(gk.get('saves') or 0)
     goals_conceded= int(gk.get('goals_conceded') or 0)
 
-    # Derived ratios
     duels_ratio = (duels_won / duels_total)              if duels_total > 0 else 0.0
     drib_ratio  = (drib_succ / drib_att)                 if drib_att > 0   else 0.0
     save_ratio  = saves / (saves + goals_conceded)       if (saves + goals_conceded) > 0 else 0.5
 
-    # Normalized 0-10 components
-    r_rating      = rating                     # already 0-10
+    r_rating      = rating                     
     r_goals       = normalize(goals, 3)
     r_assists     = normalize(assists, 3)
     r_shots_on    = normalize(shots_on, 8)
@@ -94,7 +91,6 @@ def calculate_ppi(stats, position):
                r_shots_on   * 0.10 +
                r_dribbles   * 0.10 +
                r_key_passes * 0.10)
-
     elif pos in ['M', 'MIDFIELDER']:
         ppi = (r_rating     * 0.25 +
                r_key_passes * 0.25 +
@@ -102,20 +98,17 @@ def calculate_ppi(stats, position):
                r_assists    * 0.15 +
                r_duels      * 0.10 +
                r_goals      * 0.05)
-
     elif pos in ['D', 'DEFENDER']:
         ppi = (r_rating      * 0.30 +
                r_duels       * 0.25 +
                r_intercepts  * 0.20 +
                r_tackles     * 0.15 +
                r_fouls_drawn * 0.10)
-
     elif pos in ['G', 'GOALKEEPER']:
         ppi = (r_rating     * 0.30 +
                r_save_ratio * 0.30 +
                r_saves      * 0.20 +
                r_save_ratio * 0.20)
-
     else:
         ppi = r_rating
 
@@ -125,7 +118,6 @@ def calculate_ppi(stats, position):
 # ── API CLIENT ───────────────────────────────────────────────────────────────
 
 def api_get(endpoint, params=None):
-    """Single API call with error handling"""
     try:
         resp = requests.get(
             f"{API_BASE}/{endpoint}",
@@ -170,10 +162,7 @@ def get_lineups(fixture_id):
 # ── DATABASE ─────────────────────────────────────────────────────────────────
 
 def match_already_processed(fixture_id):
-    result = supabase.table('matches')\
-        .select('fixture_id')\
-        .eq('fixture_id', fixture_id)\
-        .execute()
+    result = supabase.table('matches').select('fixture_id').eq('fixture_id', fixture_id).execute()
     return len(result.data) > 0
 
 def safe_int(val):
@@ -187,6 +176,36 @@ def safe_float(val):
         return float(val)
     except:
         return None
+
+def update_standings():
+    data = api_get("standings", {"league": LEAGUE_ID, "season": SEASON})
+    if not data:
+        return
+        
+    standings_arrays = data[0].get('league', {}).get('standings', [])
+    rows = []
+    
+    for grp in standings_arrays:
+        for t in grp:
+            g_name = str(t.get('group', '')).replace('Group', '').strip()
+            rows.append({
+                'team_id': t['team']['id'],
+                'team_name': t['team']['name'],
+                'group_name': g_name,
+                'rank': t.get('rank', 0),
+                'points': t.get('points', 0),
+                'goals_diff': t.get('goalsDiff', 0),
+                'played': t['all'].get('played', 0),
+                'win': t['all'].get('win', 0),
+                'draw': t['all'].get('draw', 0),
+                'lose': t['all'].get('lose', 0),
+                'goals_for': t['all']['goals'].get('for', 0),
+                'goals_against': t['all']['goals'].get('against', 0)
+            })
+            
+    if rows:
+        supabase.table('standings').upsert(rows).execute()
+        print(f"  ✓ Standings synced directly from API ({len(rows)} teams)")
 
 def save_match(fixture, stats_data):
     home_id = fixture['teams']['home']['id']
@@ -253,7 +272,6 @@ def save_events(fixture_id, events):
     print(f"  ✓ {len(rows)} events saved")
 
 def save_players_and_stats(fixture_id, players_data, lineups_data):
-    # Build position map from lineups
     pos_map = {}
     for team in lineups_data:
         for entry in team.get('startXI', []) + team.get('substitutes', []):
@@ -266,7 +284,6 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
 
     for team_data in players_data:
         team_name = team_data.get('team', {}).get('name', '')
-
         for player_entry in team_data.get('players', []):
             player = player_entry.get('player', {})
             stats  = (player_entry.get('statistics') or [{}])[0]
@@ -278,7 +295,6 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             position = (stats.get('games', {}) or {}).get('position', 'M') or 'M'
             pos_ppi  = calculate_ppi(stats, position)
 
-            # Stage player profile for bulk upsert
             player_profiles_to_upsert.append({
                 'player_id':       pid,
                 'name':            player.get('name', ''),
@@ -300,7 +316,6 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             gk = stats.get('goalkeeper',{})or {}
             c  = stats.get('cards', {})    or {}
 
-            # Stage match stats for bulk upsert
             player_stats_to_upsert.append({
                 'fixture_id':          fixture_id,
                 'player_id':           pid,
@@ -332,7 +347,6 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'overall_ppi':         None,
             })
 
-    # Execute Bulk Upserts outside the loop
     if player_profiles_to_upsert:
         supabase.table('players').upsert(player_profiles_to_upsert).execute()
     if player_stats_to_upsert:
@@ -342,14 +356,8 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
     update_overall_ppi(fixture_id)
 
 def update_overall_ppi(fixture_id):
-    """Normalise each player's PPI relative to tournament position average"""
     for pos in ['F', 'M', 'D', 'G']:
-        all_ppis = supabase.table('player_match_stats')\
-            .select('position_ppi')\
-            .eq('position', pos)\
-            .gt('minutes_played', 44)\
-            .execute()
-
+        all_ppis = supabase.table('player_match_stats').select('position_ppi').eq('position', pos).gt('minutes_played', 44).execute()
         ppis = [r['position_ppi'] for r in all_ppis.data if r.get('position_ppi')]
         if not ppis:
             continue
@@ -358,22 +366,12 @@ def update_overall_ppi(fixture_id):
         if avg == 0:
             continue
 
-        # Fetch using player_id instead of id
-        match_players = supabase.table('player_match_stats')\
-            .select('player_id, position_ppi')\
-            .eq('fixture_id', fixture_id)\
-            .eq('position', pos)\
-            .execute()
+        match_players = supabase.table('player_match_stats').select('player_id, position_ppi').eq('fixture_id', fixture_id).eq('position', pos).execute()
 
         for row in match_players.data:
             if row.get('position_ppi'):
                 overall = round(min((row['position_ppi'] / avg) * 10, 15.0), 2)
-                # Update explicitly checking fixture_id AND player_id
-                supabase.table('player_match_stats')\
-                    .update({'overall_ppi': overall})\
-                    .eq('fixture_id', fixture_id)\
-                    .eq('player_id', row['player_id'])\
-                    .execute()
+                supabase.table('player_match_stats').update({'overall_ppi': overall}).eq('fixture_id', fixture_id).eq('player_id', row['player_id']).execute()
 
     print(f"  ✓ Overall PPI normalised")
 
@@ -388,6 +386,10 @@ def run():
     if not API_KEY or API_KEY == 'placeholder':
         print("⚠  No API key — skipping. Update APISPORTS_KEY secret when ready.")
         return
+
+    # Unconditionally pull standings first
+    print("\n→ Syncing official standings...")
+    update_standings()
 
     finished = get_finished_matches()
     if not finished:
