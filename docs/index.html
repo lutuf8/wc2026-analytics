@@ -35,12 +35,10 @@
   @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 var(--green)} 50%{opacity:.6;box-shadow:0 0 0 5px transparent} }
   @keyframes grow { from{transform:scaleX(0)} to{transform:scaleX(1)} }
 
-  /* speed stripe motif */
   .stripe { height:4px; display:flex; transform:skewX(-24deg) scaleX(1.1); }
   .stripe span { flex:1; }
   .stripe .r{background:var(--red)} .stripe .g{background:var(--green)} .stripe .b{background:var(--blue)}
 
-  /* ── NAVBAR (logo + tabs + badge, all in one sticky bar) ── */
   .topbar { display:flex; align-items:center; background:rgba(8,11,20,0.95); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50; height:58px; backdrop-filter:blur(16px); padding:0; }
   .brand { display:flex; align-items:center; gap:11px; padding:0 24px; flex-shrink:0; border-right:1px solid var(--line); height:100%; }
   .brand-mark { width:32px; height:32px; border-radius:8px; background:linear-gradient(140deg,var(--gold2),var(--gold),#D99000); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px var(--gold-glow); }
@@ -53,7 +51,6 @@
   .live-pill.is-live { color:var(--green); }
   .live-pill.is-live .live-dot { background:var(--green); animation:pulse 1.8s infinite; }
 
-  /* HERO */
   .hero { padding:36px 40px 28px; position:relative; }
   .hero-inner { display:grid; grid-template-columns:1fr 320px; gap:36px; align-items:start; }
   .hero-main { display:flex; flex-direction:column; }
@@ -94,7 +91,6 @@
   .s-green .hstat-num{color:var(--green)} .s-blue .hstat-num{color:var(--blue)} .s-red .hstat-num{color:var(--red)}
   .hstat-lbl { font-size:10px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-top:4px; }
 
-  /* TABS (inside navbar) */
   .nav-tabs { display:flex; align-items:center; gap:2px; padding:0 16px; flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; height:100%; }
   .nav-tabs::-webkit-scrollbar { display:none; }
   .tab { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; padding:7px 14px; border-radius:7px; cursor:pointer; color:var(--muted); background:none; border:none; transition:all .2s; white-space:nowrap; flex-shrink:0; }
@@ -117,7 +113,6 @@
   .card-s { font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; letter-spacing:0.06em; }
   .card-b { padding:18px 20px; }
 
-  /* MATCH CARD */
   .match { position:relative; background:linear-gradient(165deg,var(--surf2),var(--surf1)); border:1px solid var(--line); border-radius:18px; padding:22px 20px 18px; overflow:hidden; transition:transform .3s, box-shadow .3s; }
   .match:hover { transform:translateY(-4px); box-shadow:0 20px 50px rgba(0,0,0,0.5); }
   .match::before { content:''; position:absolute; top:-2px; right:-30px; width:120px; height:8px; transform:skewX(-24deg); background:linear-gradient(90deg,var(--red),var(--green),var(--blue)); opacity:0.85; }
@@ -134,7 +129,6 @@
   .mbar { display:flex; gap:3px; height:5px; grid-column:1/4; border-radius:3px; overflow:hidden; }
   .mbar i { display:block; border-radius:3px; transform-origin:left; animation:grow .8s cubic-bezier(.2,.7,.2,1); }
 
-  /* PPI TABLE */
   .tbl { width:100%; border-collapse:collapse; }
   .tbl th { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:11px 18px; text-align:left; border-bottom:1px solid var(--line); }
   .tbl td { padding:13px 18px; border-bottom:1px solid var(--line); font-size:14px; }
@@ -150,7 +144,6 @@
   .ppibar { width:74px; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; display:inline-block; vertical-align:middle; }
   .ppibar i { display:block; height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),var(--gold2)); transform-origin:left; animation:grow .8s cubic-bezier(.2,.7,.2,1); box-shadow:0 0 10px var(--gold-glow); }
 
-  /* SCORERS */
   .scr { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); }
   .scr:last-child { border-bottom:none; }
   .scr-rk { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:20px; color:var(--dim); width:26px; }
@@ -160,13 +153,11 @@
   .scr-glbl { font-size:11px; color:var(--muted); font-weight:600; }
   .scr-a { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); min-width:50px; text-align:right; letter-spacing:0.04em; }
 
-  /* STAT BOXES */
   .sbox { position:relative; background:linear-gradient(160deg,var(--surf2),var(--surf1)); border:1px solid var(--line); border-radius:16px; padding:22px; overflow:hidden; }
   .sbox-num { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:46px; line-height:1; }
   .sbox-team { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.02em; margin-top:4px; }
   .sbox-lbl { font-size:11px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:8px; font-weight:600; }
 
-  /* DATE / MATCHDAY HEADERS */
   .day { display:flex; align-items:center; gap:14px; margin:6px 0 16px; }
   .day-tag { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:22px; letter-spacing:0.02em; text-transform:uppercase; }
   .day-tag em { color:var(--gold); font-style:normal; }
@@ -175,7 +166,6 @@
   .day-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:30px; }
   @media(max-width:920px){ .day-grid { grid-template-columns:1fr; } }
 
-  /* CONTENT STUDIO */
   .ctrl { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
   .sel { background:var(--surf1); border:1px solid var(--line2); color:var(--text); padding:12px 16px; border-radius:11px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; cursor:pointer; min-width:230px; }
   .sel:focus { outline:none; border-color:var(--gold); }
@@ -188,7 +178,6 @@
   .cpy:hover { border-color:var(--gold); color:var(--gold); }
   .cpy.ok { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#1a1200; border-color:var(--gold); }
 
-  /* DATA LAB */
   .lab-note { background:linear-gradient(135deg,rgba(255,193,48,0.08),transparent); border:1px solid var(--line); border-left:3px solid var(--gold); border-radius:14px; padding:18px 22px; margin-bottom:26px; font-size:14px; color:var(--muted); line-height:1.65; }
   .lab-note b { color:var(--text); }
   .chart-t { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:5px; }
@@ -210,7 +199,6 @@
 
   .empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
 
-  /* AWARDS */
   .award-note { font-size:12px; color:var(--muted); padding:12px 20px 4px; line-height:1.5; }
   .awtbl th { text-align:center; } .awtbl th:nth-child(2) { text-align:left; }
   .awtbl td { text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; }
@@ -219,7 +207,6 @@
   .awtbl .aw-s { font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:18px; color:var(--gold); text-shadow:0 0 14px var(--gold-glow); }
   .awtbl tbody tr:first-child td { background:rgba(255,193,48,0.05); }
 
-  /* horizontally scrollable table wrapper (so wide tables aren't trapped off-screen) */
   .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .tblwrap::-webkit-scrollbar { height:6px; }
   .tblwrap::-webkit-scrollbar-thumb { background:var(--line2); border-radius:3px; }
@@ -227,7 +214,6 @@
   .fl { width:24px; height:16px; object-fit:cover; border-radius:3px; margin-right:9px; vertical-align:middle; position:relative; top:-1px; box-shadow:0 1px 4px rgba(0,0,0,0.5); }
   .pp-name .fl { width:38px; height:25px; margin-right:14px; border-radius:4px; }
 
-  /* PLAYERS TAB */
   .ptoggle { display:inline-flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid var(--line); padding:4px; border-radius:11px; margin-bottom:22px; }
   .pt-btn { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 18px; border-radius:8px; cursor:pointer; color:var(--muted); background:none; border:none; transition:all .2s; }
   .pt-btn:hover { color:var(--text); }
@@ -675,13 +661,20 @@ const DEMO_PMS=[
 let PMS=DEMO_PMS;
 let KEEPERS=DEMO_KEEPERS;
 
+const TEAM_GROUP={};
+Object.entries(ALL_TEAMS).forEach(([L,teams])=>teams.forEach(t=>TEAM_GROUP[t]=L));
+function getGroup(m){
+  let rawGroup = m.grp||m.group_name||m.group||TEAM_GROUP[m.home_team]||TEAM_GROUP[m.away_team]||'?';
+  return String(rawGroup).replace(/Group\s+/i, '').trim();
+}
+
 function countdown(){
   const diff=new Date('2026-06-11T20:00:00Z')-new Date();
   if(diff<=0){document.getElementById('livePill').classList.add('is-live');document.getElementById('liveTxt').textContent='LIVE';}
 }
 async function sb(t,p){try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?'+p,{headers});if(!r.ok)return null;return await r.json();}catch{return null;}}
 
-// UPDATED TAB FUNCTION: Remembers your tab across reloads
+// REMEMBERS TAB ON RELOAD
 function tab(n,b){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tabs .tab').forEach(t=>t.classList.remove('active'));
@@ -923,88 +916,146 @@ function initTeams(){
 }
 
 
-// UPDATED STANDINGS LOGIC
-// Maps directly from the D.standings array loaded from the API via Supabase
-function renderStandings() {
-  const el = document.getElementById('grpGrid');
-  if (!el) return;
-  
-  let G = {};
-  
-  // Use Demo data if no API standings are loaded
-  if (!D.standings || !D.standings.length) {
-    if (D.isDemo) {
-      Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
-        G[L] = [];
-        teams.forEach((n, i) => {
-          G[L].push({ team_name: n, group_name: L, rank: i+1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0 });
-        });
-      });
-    } else {
-      el.innerHTML = '<div class="empty">Standings appear once synced from API</div>';
-      return;
-    }
-  } else {
-    // Map the real API Standings into Group buckets
+// HYBRID STANDINGS LOGIC: Bulletproof fallback
+function getSafeStandings() {
+  // 1. If we have official API standings from Supabase, use them!
+  if (D.standings && D.standings.length > 0) {
+    let G = {};
     D.standings.forEach(t => {
-      const L = t.group_name;
+      const L = t.group_name || 'A';
       if (!G[L]) G[L] = [];
       G[L].push(t);
     });
+    return G;
   }
 
-  let html = '';
-  // Sort Group A to L
-  Object.keys(G).sort().forEach(L => {
-    // Sort teams by official API rank
-    const rows = G[L].sort((a,b) => a.rank - b.rank);
-    
-    html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-      '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-      rows.map((t, i) => {
-        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
-        const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-        return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-               '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
-               '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
-      }).join('') + '</tbody></table></div>';
+  // 2. Otherwise, manually compute from matches seamlessly so it never breaks
+  const G = {};
+  Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
+    G[L] = [];
+    teams.forEach(n => {
+      G[L].push({ team_name: n, group_name: L, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 });
+    });
   });
-  el.innerHTML = html;
-  renderThirdPlace(G);
+
+  if (D.isDemo) return G;
+
+  D.matches.forEach(m => {
+    if (!m || !m.home_team || !m.away_team) return;
+    
+    let ht, at;
+    for (const L in G) {
+      if (!ht) ht = G[L].find(t => t.team_name === m.home_team);
+      if (!at) at = G[L].find(t => t.team_name === m.away_team);
+    }
+
+    if (!ht) {
+       const g = getGroup(m) || '?';
+       if (!G[g]) G[g] = [];
+       ht = { team_name: m.home_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
+       G[g].push(ht);
+    }
+    if (!at) {
+       const g = getGroup(m) || '?';
+       if (!G[g]) G[g] = [];
+       at = { team_name: m.away_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
+       G[g].push(at);
+    }
+
+    const hs = parseInt(m.home_score);
+    const as = parseInt(m.away_score);
+
+    if (!isNaN(hs) && !isNaN(as)) {
+      ht.played++; at.played++;
+      ht.goals_for += hs; ht.goals_against += as;
+      at.goals_for += as; at.goals_against += hs;
+      ht.goals_diff = ht.goals_for - ht.goals_against;
+      at.goals_diff = at.goals_for - at.goals_against;
+
+      if (hs > as) { ht.win++; ht.points += 3; at.lose++; }
+      else if (hs < as) { at.win++; at.points += 3; ht.lose++; }
+      else { ht.draw++; at.draw++; ht.points++; at.points++; }
+    }
+  });
+
+  return G;
+}
+
+function renderStandings() {
+  const el = document.getElementById('grpGrid');
+  if (!el) return;
+  try {
+    const G = getSafeStandings();
+    const letters = Object.keys(G).sort();
+    
+    if (!letters.length) {
+      el.innerHTML = '<div class="empty">No standings data</div>';
+      return;
+    }
+
+    let html = '';
+    letters.forEach(L => {
+      const rows = G[L].sort((a,b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+        return b.goals_for - a.goals_for;
+      });
+      
+      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
+        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+        rows.map((t, i) => {
+          const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+          const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+          return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+                 '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
+                 '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    });
+    el.innerHTML = html;
+    renderThirdPlace(G);
+  } catch (err) {
+    el.innerHTML = '<div class="empty">Error calculating standings</div>';
+    console.error("Standings Error:", err);
+  }
 }
 
 function renderThirdPlace(G) {
   const tb = document.getElementById('thirdBody');
   if (!tb) return;
-  
-  const thirds = [];
-  Object.keys(G).forEach(L => {
-    const rows = G[L].sort((a,b) => a.rank - b.rank);
-    // Grab the 3rd place team if they have actually played
-    if (rows.length >= 3 && rows[2].played > 0) {
-      thirds.push({...rows[2], group_name: L});
+  try {
+    const thirds = [];
+    Object.keys(G).forEach(L => {
+      const rows = G[L].sort((a,b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+        return b.goals_for - a.goals_for;
+      });
+      if (rows.length >= 3 && rows[2] && rows[2].played > 0) {
+        thirds.push({ ...rows[2], group_name: L });
+      }
+    });
+
+    if (!thirds.length) {
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
+      return;
     }
-  });
 
-  if (!thirds.length) {
-    tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
-    return;
+    thirds.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+      return b.goals_for - a.goals_for;
+    });
+
+    tb.innerHTML = thirds.map((t, i) => {
+      const adv = i < 8; 
+      const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+             '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
+             '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
+    }).join('');
+  } catch (err) {
+    console.error("Third Place Error:", err);
   }
-
-  // Rank the 3rd place teams against each other
-  thirds.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-    return b.goals_for - a.goals_for;
-  });
-
-  tb.innerHTML = thirds.map((t, i) => {
-    const adv = i < 8; 
-    const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-           '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
-           '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
-  }).join('');
 }
 
 function renderBracket(){
@@ -1098,7 +1149,6 @@ function renderAwards(){
 async function load(){
   countdown();
 
-  // ADDED STANDINGS FETCH
   const [m, pd, pms, st] = await Promise.all([
     sb('matches','select=*&limit=200'),
     sb('tournament_leaderboard','select=*&order=avg_overall_ppi.desc&limit=100'),
