@@ -212,6 +212,10 @@
   .awtbl tbody tr:first-child td { background:rgba(255,193,48,0.05); }
 
   .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .tbl-scroll { max-height: 420px; overflow-y: auto; }
+  .tbl-scroll th { position: sticky; top: 0; background: var(--surf2); z-index: 10; box-shadow: 0 1px 0 var(--line); }
+  .tbl-scroll::-webkit-scrollbar { width: 6px; }
+  .tbl-scroll::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
   .tblwrap::-webkit-scrollbar { height:6px; }
   .tblwrap::-webkit-scrollbar-thumb { background:var(--line2); border-radius:3px; }
   .tblwrap .ptbl-wide { min-width:620px; }
@@ -352,7 +356,7 @@
     <div class="g2">
       <div class="card">
         <div class="card-h"><div class="card-t">PPI Leaderboard</div><div class="card-s">OVERALL / NORMALISED</div></div>
-        <div class="tblwrap"><table class="tbl"><thead><tr><th>#</th><th>Player</th><th>Pos</th><th>PPI</th><th></th></tr></thead><tbody id="ppiBoard"></tbody></table></div>
+        <div class="tblwrap tbl-scroll"><table class="tbl"><thead><tr><th>#</th><th>Player</th><th>Pos</th><th>PPI</th><th></th></tr></thead><tbody id="ppiBoard"></tbody></table></div>
       </div>
       <div class="card">
         <div class="card-h"><div class="card-t">Golden Boot Race</div><div class="card-s">MOST GOALS</div></div>
@@ -531,7 +535,7 @@ const headers={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
 const FLAGS={
 'Mexico':'mx','South Africa':'za','South Korea':'kr','Korea Republic':'kr','Czechia':'cz','Czech Republic':'cz',
-'Canada':'ca','Switzerland':'ch','Qatar':'qa','Bosnia and Herzegovina':'ba',
+'Canada':'ca','Switzerland':'ch','Qatar':'qa','Bosnia and Herzegovina':'ba','Bosnia & Herzegovina':'ba',
 'Brazil':'br','Morocco':'ma','Haiti':'ht','Scotland':'gb-sct',
 'United States':'us','USA':'us','Paraguay':'py','Australia':'au','Türkiye':'tr','Turkey':'tr',
 'Germany':'de','Curacao':'cw','Ivory Coast':'ci','Ecuador':'ec',
