@@ -515,7 +515,6 @@
 <footer class="foot"><span>World Cup 2026 Analytics &nbsp;&middot;&nbsp; by <em>Lutuf Abdulla</em></span></footer>
 
 <script>
-// UI Protection Utility (Failsafe string formatting)
 const escapeText = (str) => {
   if (str === null || str === undefined || str === 'undefined') return '';
   return String(str)
@@ -530,7 +529,6 @@ const SUPABASE_URL='https://grubvwyjhnnluecdfntw.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdydWJ2d3lqaG5ubHVlY2RmbnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MzQxMTcsImV4cCI6MjA5NjQxMDExN30.2tMthbzpP3hnrhD90TKtrJTHpIQ8NFm8n_qtg5Hjb6U';
 const headers={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
-// Added 'Bosnia & Herzegovina' to ensure the API matches the flag URL
 const FLAGS={
 'Mexico':'mx','South Africa':'za','South Korea':'kr','Korea Republic':'kr','Czechia':'cz','Czech Republic':'cz',
 'Canada':'ca','Switzerland':'ch','Qatar':'qa','Bosnia and Herzegovina':'ba','Bosnia & Herzegovina':'ba',
@@ -583,70 +581,7 @@ const DEMO_TEAMS=[
   {name:'France',xg:2.8,goals:3,possession:67,ppda:7.2},{name:'Spain',xg:2.8,goals:3,possession:70,ppda:6.5},
 ];
 
-// LIVE FALLBACK STANDINGS: Pre-populated with the exact scores as of June 14, 2026.
-const DEMO_STANDINGS = [
-  {team_name: 'Mexico', group_name: 'A', rank: 1, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 2, points: 3, goals_for: 2},
-  {team_name: 'South Korea', group_name: 'A', rank: 2, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 1, points: 3, goals_for: 2},
-  {team_name: 'Czechia', group_name: 'A', rank: 3, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -1, points: 0, goals_for: 1},
-  {team_name: 'South Africa', group_name: 'A', rank: 4, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -2, points: 0, goals_for: 0},
-  
-  {team_name: 'Switzerland', group_name: 'B', rank: 1, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
-  {team_name: 'Canada', group_name: 'B', rank: 2, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
-  {team_name: 'Qatar', group_name: 'B', rank: 3, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
-  {team_name: 'Bosnia and Herzegovina', group_name: 'B', rank: 4, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
-  
-  {team_name: 'Morocco', group_name: 'C', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Brazil', group_name: 'C', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Scotland', group_name: 'C', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Haiti', group_name: 'C', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  
-  {team_name: 'United States', group_name: 'D', rank: 1, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 3, points: 3, goals_for: 4},
-  {team_name: 'Türkiye', group_name: 'D', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Australia', group_name: 'D', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Paraguay', group_name: 'D', rank: 4, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -3, points: 0, goals_for: 1},
-
-  {team_name: 'Germany', group_name: 'E', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Curacao', group_name: 'E', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Ecuador', group_name: 'E', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Ivory Coast', group_name: 'E', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'Netherlands', group_name: 'F', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Japan', group_name: 'F', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Sweden', group_name: 'F', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Tunisia', group_name: 'F', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'Belgium', group_name: 'G', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Egypt', group_name: 'G', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Iran', group_name: 'G', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'New Zealand', group_name: 'G', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'Spain', group_name: 'H', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Cabo Verde', group_name: 'H', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Saudi Arabia', group_name: 'H', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Uruguay', group_name: 'H', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'France', group_name: 'I', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Senegal', group_name: 'I', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Norway', group_name: 'I', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Iraq', group_name: 'I', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'Argentina', group_name: 'J', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Algeria', group_name: 'J', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Austria', group_name: 'J', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Jordan', group_name: 'J', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'Portugal', group_name: 'K', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Uzbekistan', group_name: 'K', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Colombia', group_name: 'K', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'DR Congo', group_name: 'K', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-
-  {team_name: 'England', group_name: 'L', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Croatia', group_name: 'L', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Ghana', group_name: 'L', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
-  {team_name: 'Panama', group_name: 'L', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0}
-];
-
-let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true,standings:DEMO_STANDINGS};
+let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
 
 const ALL_TEAMS={
   A:['Mexico','South Africa','South Korea','Czechia'],
@@ -665,10 +600,6 @@ const ALL_TEAMS={
 
 const TEAM_GROUP={};
 Object.entries(ALL_TEAMS).forEach(([L,teams])=>teams.forEach(t=>TEAM_GROUP[t]=L));
-function getGroup(m){
-  let rawGroup = m.grp||m.group_name||m.group||TEAM_GROUP[m.home_team]||TEAM_GROUP[m.away_team]||'?';
-  return String(rawGroup).replace(/Group\s+/i, '').trim();
-}
 
 function countdown(){
   const diff=new Date('2026-06-11T20:00:00Z')-new Date();
@@ -916,55 +847,76 @@ function initTeams(){
   renderTeam();
 }
 
-// ── STANDINGS LOGIC (With fully populated Live Fallback data) ──
+// ── STRICT LOCAL STANDINGS ENGINE (Ignores Supabase Standings Table) ──
+function computeStandings() {
+  const G = {};
+  
+  // Pre-fill all 48 teams into their correct groups
+  Object.keys(ALL_TEAMS).forEach(L => {
+    G[L] = [];
+    ALL_TEAMS[L].forEach(n => {
+      G[L].push({ team_name: n, group_name: L, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 });
+    });
+  });
+
+  // Calculate points and GD straight from the match history
+  if (Array.isArray(D.matches) && D.matches.length > 0) {
+    D.matches.forEach(m => {
+      if (!m.home_team || !m.away_team) return;
+      
+      let ht, at;
+      // Locate the teams securely across groups
+      for (let L in G) {
+        if (!ht) ht = G[L].find(x => x.team_name === m.home_team);
+        if (!at) at = G[L].find(x => x.team_name === m.away_team);
+      }
+      
+      // Tally scores if the match actually has numbers
+      if (ht && at) {
+        const hs = parseInt(m.home_score);
+        const as = parseInt(m.away_score);
+        
+        if (!isNaN(hs) && !isNaN(as)) {
+          ht.played++; at.played++;
+          ht.goals_for += hs; at.goals_for += as;
+          ht.goals_against += as; at.goals_against += hs;
+          ht.goals_diff = ht.goals_for - ht.goals_against;
+          at.goals_diff = at.goals_for - at.goals_against;
+
+          if (hs > as) { ht.win++; ht.points += 3; at.lose++; }
+          else if (hs < as) { at.win++; at.points += 3; ht.lose++; }
+          else { ht.draw++; at.draw++; ht.points++; at.points++; }
+        }
+      }
+    });
+  }
+  return G;
+}
+
 function renderStandings() {
   const el = document.getElementById('grpGrid');
   if (!el) return;
-  
-  let G = {};
-  
-  // Use Demo/Fallback data if no API standings are loaded yet
-  if (!D.standings || !D.standings.length) {
-    if (D.isDemo) {
-      Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
-        G[L] = [];
-        teams.forEach((n, i) => {
-          G[L].push({ team_name: n, group_name: L, rank: i+1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0 });
-        });
-      });
-    } else {
-      el.innerHTML = '<div class="empty">Standings appear once synced from API</div>';
-      return;
-    }
-  } else {
-    // Map the Standing data into Group buckets
-    D.standings.forEach(t => {
-      const L = t.group_name;
-      if (!G[L]) G[L] = [];
-      G[L].push(t);
-    });
-  }
 
+  const G = computeStandings();
   let html = '';
-  // Sort Group A to L
+  
   Object.keys(G).sort().forEach(L => {
-    // Sort teams by rank/points
-    const rows = G[L].sort((a,b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-      return b.goals_for - a.goals_for;
+    const rows = G[L].sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
+    let trs = '';
+    
+    rows.forEach((t, i) => {
+      const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+      const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+      trs += '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+             '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
+             '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
     });
     
     html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-      '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-      rows.map((t, i) => {
-        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
-        const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-        return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-               '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
-               '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
-      }).join('') + '</tbody></table></div>';
+            '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+            trs + '</tbody></table></div>';
   });
+  
   el.innerHTML = html;
   renderThirdPlace(G);
 }
@@ -973,38 +925,27 @@ function renderThirdPlace(G) {
   const tb = document.getElementById('thirdBody');
   if (!tb) return;
   
-  const thirds = [];
+  let thirds = [];
   Object.keys(G).forEach(L => {
-    const rows = G[L].sort((a,b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-      return b.goals_for - a.goals_for;
-    });
-    // Grab the 3rd place team regardless of if they played a game
-    if (rows.length >= 3 && rows[2]) {
-      thirds.push({...rows[2], group_name: L});
+    const rows = G[L].sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
+    // Always push the 3rd place team, even if played is 0
+    if (rows.length >= 3) {
+      thirds.push(rows[2]);
     }
   });
 
-  if (!thirds.length) {
-    tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
-    return;
-  }
-
-  // Rank the 3rd place teams against each other
-  thirds.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-    return b.goals_for - a.goals_for;
-  });
-
-  tb.innerHTML = thirds.map((t, i) => {
+  // Rank 3rd place teams against each other
+  thirds.sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
+  
+  let trs = '';
+  thirds.forEach((t, i) => {
     const adv = i < 8; 
     const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+    trs += '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
            '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
            '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
-  }).join('');
+  });
+  tb.innerHTML = trs;
 }
 
 function renderBracket(){
@@ -1098,17 +1039,11 @@ function renderAwards(){
 async function load(){
   countdown();
 
-  const [m, pd, pms, st] = await Promise.all([
+  const [m, pd, pms] = await Promise.all([
     sb('matches','select=*&limit=200'),
     sb('tournament_leaderboard','select=*&order=avg_overall_ppi.desc&limit=100'),
-    sb('player_match_stats','select=*&limit=1000'),
-    sb('standings','select=*&limit=100')
+    sb('player_match_stats','select=*&limit=1000')
   ]);
-
-  // If the API returns valid standings, use them. If not, the UI will fall back to DEMO_STANDINGS.
-  if(st && st.length > 0) {
-    D.standings = st;
-  }
 
   if(m&&m.length>0){
     D.isDemo=false;
@@ -1210,7 +1145,12 @@ async function load(){
   renderSpotlight();renderNextMatch();computeStorylines();
   document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+escapeText(x.home_team)+' '+(x.home_score??'?')+'-'+(x.away_score??'?')+' '+escapeText(x.away_team)+'</option>').join('');
   genContent();predict();
-  initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
+  initPlayers();initTeams();
+  
+  // Renders locally using matches table ONLY
+  renderStandings(); 
+  
+  renderBracket();renderAwards();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1218,7 +1158,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => tab(savedTab, null), 50);
 });
 
+// Run immediately on page load
 load();
+
+// Silently fetch new data from Supabase every 3 minutes so the dashboard updates live
+setInterval(load, 180000); 
 </script>
 </body>
 </html>
