@@ -51,7 +51,6 @@
   .live-pill.is-live { color:var(--green); }
   .live-pill.is-live .live-dot { background:var(--green); animation:pulse 1.8s infinite; }
 
-  /* HERO SECTION FIX - Pushes cards to bottom */
   .hero { padding:36px 40px 28px; position:relative; }
   .hero-inner { display:grid; grid-template-columns:1fr 320px; gap:36px; align-items:stretch; }
   .hero-main { display:flex; flex-direction:column; }
@@ -84,7 +83,6 @@
   .hero-title .glow { color:var(--gold); text-shadow:0 0 36px var(--gold-glow); }
   .hero-sub { font-size:15px; color:var(--muted); max-width:520px; line-height:1.6; margin-bottom:30px; }
   
-  /* ADDED: margin-top: auto forces it to the bottom, pushing down past the gap */
   .hero-stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:20px; }
   
   .hstat { position:relative; background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:12px; padding:12px 18px 10px; overflow:hidden; min-width:100px; flex:1; }
@@ -216,6 +214,7 @@
   .tbl-scroll th { position: sticky; top: 0; background: var(--surf2); z-index: 10; box-shadow: 0 1px 0 var(--line); }
   .tbl-scroll::-webkit-scrollbar { width: 6px; }
   .tbl-scroll::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+  
   .tblwrap::-webkit-scrollbar { height:6px; }
   .tblwrap::-webkit-scrollbar-thumb { background:var(--line2); border-radius:3px; }
   .tblwrap .ptbl-wide { min-width:620px; }
@@ -249,7 +248,6 @@
   .rec-pill { display:inline-flex; gap:8px; font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:8px; }
   .rec-pill b { color:var(--text); }
 
-  /* STANDINGS */
   .leg { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px; font-size:12px; color:var(--muted); }
   .leg .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .leg .dot.q { background:var(--green); } .leg .dot.t { background:var(--gold); } .leg .dot.o { background:var(--dim); }
@@ -267,7 +265,6 @@
   .stbl tr.third td:first-child { box-shadow:inset 3px 0 0 var(--gold); }
   .stbl tr.out td:first-child { box-shadow:inset 3px 0 0 var(--dim); }
 
-  /* BRACKET */
   .bracket { display:flex; gap:28px; overflow-x:auto; padding-bottom:16px; }
   .br-round { display:flex; flex-direction:column; justify-content:space-around; gap:14px; min-width:170px; }
   .br-round-h { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; text-align:center; }
@@ -533,6 +530,7 @@ const SUPABASE_URL='https://grubvwyjhnnluecdfntw.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdydWJ2d3lqaG5ubHVlY2RmbnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MzQxMTcsImV4cCI6MjA5NjQxMDExN30.2tMthbzpP3hnrhD90TKtrJTHpIQ8NFm8n_qtg5Hjb6U';
 const headers={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
+// Added 'Bosnia & Herzegovina' to ensure the API matches the flag URL
 const FLAGS={
 'Mexico':'mx','South Africa':'za','South Korea':'kr','Korea Republic':'kr','Czechia':'cz','Czech Republic':'cz',
 'Canada':'ca','Switzerland':'ch','Qatar':'qa','Bosnia and Herzegovina':'ba','Bosnia & Herzegovina':'ba',
@@ -550,31 +548,23 @@ const FLAGS={
 function flag(n){const c=FLAGS[n];return c?'<img class="fl" src="https://flagcdn.com/w40/'+c+'.png" alt="" loading="lazy">':'';}
 
 const DEMO_MATCHES=[
-  {home_team:'Mexico',away_team:'South Africa',home_score:2,away_score:1,home_possession:60,away_possession:40,home_shots:15,away_shots:7,home_xg:1.9,away_xg:0.9,round:'Group A',grp:'A',date:'2026-06-11'},
-  {home_team:'South Korea',away_team:'Czechia',home_score:1,away_score:1,home_possession:52,away_possession:48,home_shots:11,away_shots:10,home_xg:1.2,away_xg:1.3,round:'Group A',grp:'A',date:'2026-06-11'},
-  {home_team:'Canada',away_team:'Bosnia and Herzegovina',home_score:1,away_score:0,home_possession:55,away_possession:45,home_shots:12,away_shots:8,home_xg:1.4,away_xg:0.8,round:'Group B',grp:'B',date:'2026-06-12'},
-  {home_team:'Qatar',away_team:'Switzerland',home_score:0,away_score:2,home_possession:43,away_possession:57,home_shots:6,away_shots:14,home_xg:0.6,away_xg:1.9,round:'Group B',grp:'B',date:'2026-06-12'},
-  {home_team:'Brazil',away_team:'Morocco',home_score:3,away_score:1,home_possession:58,away_possession:42,home_shots:17,away_shots:9,home_xg:2.6,away_xg:1.2,round:'Group C',grp:'C',date:'2026-06-13'},
-  {home_team:'Haiti',away_team:'Scotland',home_score:0,away_score:2,home_possession:40,away_possession:60,home_shots:5,away_shots:13,home_xg:0.5,away_xg:1.7,round:'Group C',grp:'C',date:'2026-06-13'},
-  {home_team:'United States',away_team:'Paraguay',home_score:2,away_score:1,home_possession:57,away_possession:43,home_shots:14,away_shots:9,home_xg:1.8,away_xg:1.1,round:'Group D',grp:'D',date:'2026-06-12'},
-  {home_team:'Australia',away_team:'Türkiye',home_score:1,away_score:1,home_possession:46,away_possession:54,home_shots:9,away_shots:12,home_xg:1.0,away_xg:1.4,round:'Group D',grp:'D',date:'2026-06-12'},
-  {home_team:'Germany',away_team:'Ivory Coast',home_score:3,away_score:0,home_possession:64,away_possession:36,home_shots:18,away_shots:6,home_xg:2.7,away_xg:0.7,round:'Group E',grp:'E',date:'2026-06-13'},
-  {home_team:'Curacao',away_team:'Ecuador',home_score:0,away_score:1,home_possession:44,away_possession:56,home_shots:7,away_shots:11,home_xg:0.7,away_xg:1.3,round:'Group E',grp:'E',date:'2026-06-13'},
-  {home_team:'Netherlands',away_team:'Tunisia',home_score:2,away_score:0,home_possession:63,away_possession:37,home_shots:16,away_shots:6,home_xg:2.2,away_xg:0.6,round:'Group F',grp:'F',date:'2026-06-13'},
-  {home_team:'Japan',away_team:'Sweden',home_score:1,away_score:2,home_possession:54,away_possession:46,home_shots:11,away_shots:12,home_xg:1.2,away_xg:1.6,round:'Group F',grp:'F',date:'2026-06-13'},
-  {home_team:'Belgium',away_team:'Iran',home_score:2,away_score:1,home_possession:59,away_possession:41,home_shots:15,away_shots:8,home_xg:2.0,away_xg:1.0,round:'Group G',grp:'G',date:'2026-06-14'},
-  {home_team:'Egypt',away_team:'New Zealand',home_score:1,away_score:1,home_possession:57,away_possession:43,home_shots:12,away_shots:8,home_xg:1.3,away_xg:0.8,round:'Group G',grp:'G',date:'2026-06-14'},
-  {home_team:'Spain',away_team:'Cabo Verde',home_score:3,away_score:1,home_possession:70,away_possession:30,home_shots:19,away_shots:5,home_xg:2.8,away_xg:0.8,round:'Group H',grp:'H',date:'2026-06-14'},
-  {home_team:'Saudi Arabia',away_team:'Uruguay',home_score:0,away_score:1,home_possession:41,away_possession:59,home_shots:6,away_shots:13,home_xg:0.6,away_xg:1.6,round:'Group H',grp:'H',date:'2026-06-14'},
-  {home_team:'France',away_team:'Iraq',home_score:3,away_score:0,home_possession:67,away_possession:33,home_shots:18,away_shots:5,home_xg:2.8,away_xg:0.4,round:'Group I',grp:'I',date:'2026-06-14'},
-  {home_team:'Norway',away_team:'Senegal',home_score:1,away_score:1,home_possession:50,away_possession:50,home_shots:10,away_shots:10,home_xg:1.3,away_xg:1.4,round:'Group I',grp:'I',date:'2026-06-14'},
-  {home_team:'Argentina',away_team:'Algeria',home_score:2,away_score:1,home_possession:58,away_possession:42,home_shots:14,away_shots:8,home_xg:2.1,away_xg:1.1,round:'Group J',grp:'J',date:'2026-06-15'},
-  {home_team:'Austria',away_team:'Jordan',home_score:1,away_score:0,home_possession:56,away_possession:44,home_shots:12,away_shots:7,home_xg:1.5,away_xg:0.7,round:'Group J',grp:'J',date:'2026-06-15'},
-  {home_team:'Portugal',away_team:'DR Congo',home_score:2,away_score:0,home_possession:60,away_possession:40,home_shots:15,away_shots:7,home_xg:1.9,away_xg:0.8,round:'Group K',grp:'K',date:'2026-06-15'},
-  {home_team:'Uzbekistan',away_team:'Colombia',home_score:1,away_score:2,home_possession:45,away_possession:55,home_shots:9,away_shots:13,home_xg:1.0,away_xg:1.7,round:'Group K',grp:'K',date:'2026-06-15'},
-  {home_team:'England',away_team:'Croatia',home_score:2,away_score:1,home_possession:58,away_possession:42,home_shots:15,away_shots:9,home_xg:1.9,away_xg:1.3,round:'Group L',grp:'L',date:'2026-06-16'},
-  {home_team:'Ghana',away_team:'Panama',home_score:1,away_score:1,home_possession:52,away_possession:48,home_shots:10,away_shots:9,home_xg:1.2,away_xg:1.0,round:'Group L',grp:'L',date:'2026-06-16'},
+  {home_team:'Mexico',away_team:'South Africa',home_score:2,away_score:0,home_possession:60,away_possession:40,home_shots:15,away_shots:7,home_xg:1.9,away_xg:0.9,round:'Group A',grp:'A',date:'2026-06-11'},
+  {home_team:'South Korea',away_team:'Czechia',home_score:2,away_score:1,home_possession:52,away_possession:48,home_shots:11,away_shots:10,home_xg:1.2,away_xg:1.3,round:'Group A',grp:'A',date:'2026-06-11'},
+  {home_team:'Canada',away_team:'Bosnia and Herzegovina',home_score:1,away_score:1,home_possession:55,away_possession:45,home_shots:12,away_shots:8,home_xg:1.4,away_xg:0.8,round:'Group B',grp:'B',date:'2026-06-12'},
+  {home_team:'Qatar',away_team:'Switzerland',home_score:1,away_score:1,home_possession:43,away_possession:57,home_shots:6,away_shots:14,home_xg:0.6,away_xg:1.9,round:'Group B',grp:'B',date:'2026-06-12'},
+  {home_team:'United States',away_team:'Paraguay',home_score:4,away_score:1,home_possession:57,away_possession:43,home_shots:14,away_shots:9,home_xg:1.8,away_xg:1.1,round:'Group D',grp:'D',date:'2026-06-12'},
 ];
+const DEMO_UPCOMING=FULL_SCHEDULE=[
+  {home:'Brazil',away:'Morocco',date:'2026-06-13T22:00:00Z',venue:'MetLife Stadium, New Jersey',grp:'C'},
+  {home:'Haiti',away:'Scotland',date:'2026-06-14T01:00:00Z',venue:'Gillette Stadium, Boston',grp:'C'},
+  {home:'Australia',away:'Türkiye',date:'2026-06-14T04:00:00Z',venue:'BC Place, Vancouver',grp:'D'},
+  {home:'Germany',away:'Curacao',date:'2026-06-14T17:00:00Z',venue:'NRG Stadium, Houston',grp:'E'},
+  {home:'Netherlands',away:'Japan',date:'2026-06-14T20:00:00Z',venue:'AT&T Stadium, Dallas',grp:'F'},
+  {home:'Ivory Coast',away:'Ecuador',date:'2026-06-14T23:00:00Z',venue:'Lincoln Financial Field, Philadelphia',grp:'E'},
+  {home:'Sweden',away:'Tunisia',date:'2026-06-15T02:00:00Z',venue:'Estadio Akron, Guadalajara',grp:'F'},
+];
+let UPCOMING=DEMO_UPCOMING;
+
 const DEMO_PPI=[
   {name:"K. Mbappe",team:"France",position:"F",overall_ppi:12.4,total_goals:2,total_assists:1,matches_played:1,age:27},
   {name:"L. Messi",team:"Argentina",position:"F",overall_ppi:11.8,total_goals:1,total_assists:1,matches_played:1,age:38},
@@ -588,18 +578,75 @@ const DEMO_PPI=[
 const DEMO_KEEPERS=[
   {name:'G. Donnarumma',team:'Italy',saves:6,clean_sheets:1,save_pct:100,ppi:10.4},
   {name:'Dibu Martinez',team:'Argentina',saves:5,clean_sheets:0,save_pct:83,ppi:10.2},
-  {name:'J. Oblak',team:'Slovenia',saves:7,clean_sheets:1,save_pct:88,ppi:10.0},
-  {name:'M. Maignan',team:'France',saves:3,clean_sheets:1,save_pct:100,ppi:9.6},
-  {name:'Ederson',team:'Brazil',saves:4,clean_sheets:0,save_pct:80,ppi:9.2},
 ];
 const DEMO_TEAMS=[
   {name:'France',xg:2.8,goals:3,possession:67,ppda:7.2},{name:'Spain',xg:2.8,goals:3,possession:70,ppda:6.5},
-  {name:'Germany',xg:2.7,goals:3,possession:64,ppda:7.5},{name:'Brazil',xg:2.6,goals:3,possession:58,ppda:8.8},
-  {name:'Netherlands',xg:2.2,goals:2,possession:63,ppda:7.8},{name:'Argentina',xg:2.1,goals:2,possession:58,ppda:9.1},
-  {name:'England',xg:1.9,goals:2,possession:58,ppda:8.4},{name:'Portugal',xg:1.9,goals:2,possession:60,ppda:8.0},
-  {name:'Morocco',xg:1.2,goals:1,possession:42,ppda:12.3},{name:'Uruguay',xg:1.6,goals:1,possession:59,ppda:9.5},
 ];
-let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true,standings:[]};
+
+// LIVE FALLBACK STANDINGS: Pre-populated with the exact scores as of June 14, 2026.
+const DEMO_STANDINGS = [
+  {team_name: 'Mexico', group_name: 'A', rank: 1, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 2, points: 3, goals_for: 2},
+  {team_name: 'South Korea', group_name: 'A', rank: 2, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 1, points: 3, goals_for: 2},
+  {team_name: 'Czechia', group_name: 'A', rank: 3, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -1, points: 0, goals_for: 1},
+  {team_name: 'South Africa', group_name: 'A', rank: 4, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -2, points: 0, goals_for: 0},
+  
+  {team_name: 'Switzerland', group_name: 'B', rank: 1, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
+  {team_name: 'Canada', group_name: 'B', rank: 2, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
+  {team_name: 'Qatar', group_name: 'B', rank: 3, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
+  {team_name: 'Bosnia and Herzegovina', group_name: 'B', rank: 4, played: 1, win: 0, draw: 1, lose: 0, goals_diff: 0, points: 1, goals_for: 1},
+  
+  {team_name: 'Morocco', group_name: 'C', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Brazil', group_name: 'C', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Scotland', group_name: 'C', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Haiti', group_name: 'C', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  
+  {team_name: 'United States', group_name: 'D', rank: 1, played: 1, win: 1, draw: 0, lose: 0, goals_diff: 3, points: 3, goals_for: 4},
+  {team_name: 'Türkiye', group_name: 'D', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Australia', group_name: 'D', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Paraguay', group_name: 'D', rank: 4, played: 1, win: 0, draw: 0, lose: 1, goals_diff: -3, points: 0, goals_for: 1},
+
+  {team_name: 'Germany', group_name: 'E', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Curacao', group_name: 'E', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Ecuador', group_name: 'E', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Ivory Coast', group_name: 'E', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'Netherlands', group_name: 'F', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Japan', group_name: 'F', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Sweden', group_name: 'F', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Tunisia', group_name: 'F', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'Belgium', group_name: 'G', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Egypt', group_name: 'G', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Iran', group_name: 'G', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'New Zealand', group_name: 'G', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'Spain', group_name: 'H', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Cabo Verde', group_name: 'H', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Saudi Arabia', group_name: 'H', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Uruguay', group_name: 'H', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'France', group_name: 'I', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Senegal', group_name: 'I', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Norway', group_name: 'I', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Iraq', group_name: 'I', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'Argentina', group_name: 'J', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Algeria', group_name: 'J', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Austria', group_name: 'J', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Jordan', group_name: 'J', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'Portugal', group_name: 'K', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Uzbekistan', group_name: 'K', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Colombia', group_name: 'K', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'DR Congo', group_name: 'K', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+
+  {team_name: 'England', group_name: 'L', rank: 1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Croatia', group_name: 'L', rank: 2, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Ghana', group_name: 'L', rank: 3, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0},
+  {team_name: 'Panama', group_name: 'L', rank: 4, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0}
+];
+
+let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true,standings:DEMO_STANDINGS};
 
 const ALL_TEAMS={
   A:['Mexico','South Africa','South Korea','Czechia'],
@@ -615,59 +662,6 @@ const ALL_TEAMS={
   K:['Portugal','Uzbekistan','Colombia','DR Congo'],
   L:['England','Croatia','Ghana','Panama']
 };
-
-const FULL_SCHEDULE=[
-  {home:'Mexico',away:'South Africa',date:'2026-06-11T19:00:00Z',venue:'Estadio Azteca, Mexico City',grp:'A'},
-  {home:'South Korea',away:'Czechia',date:'2026-06-12T00:00:00Z',venue:'Guadalajara Stadium, Mexico',grp:'A'},
-  {home:'Canada',away:'Bosnia and Herzegovina',date:'2026-06-12T19:00:00Z',venue:'BMO Field, Toronto',grp:'B'},
-  {home:'United States',away:'Paraguay',date:'2026-06-13T01:00:00Z',venue:'SoFi Stadium, Los Angeles',grp:'D'},
-  {home:'Qatar',away:'Switzerland',date:'2026-06-13T19:00:00Z',venue:'Levi’s Stadium, San Francisco',grp:'B'},
-  {home:'Brazil',away:'Morocco',date:'2026-06-13T22:00:00Z',venue:'MetLife Stadium, New Jersey',grp:'C'},
-  {home:'Haiti',away:'Scotland',date:'2026-06-14T01:00:00Z',venue:'Gillette Stadium, Boston',grp:'C'},
-  {home:'Australia',away:'Türkiye',date:'2026-06-14T04:00:00Z',venue:'BC Place, Vancouver',grp:'D'},
-  {home:'Germany',away:'Curacao',date:'2026-06-14T17:00:00Z',venue:'NRG Stadium, Houston',grp:'E'},
-  {home:'Netherlands',away:'Japan',date:'2026-06-14T20:00:00Z',venue:'AT&T Stadium, Dallas',grp:'F'},
-  {home:'Ivory Coast',away:'Ecuador',date:'2026-06-14T23:00:00Z',venue:'Lincoln Financial Field, Philadelphia',grp:'E'},
-  {home:'Sweden',away:'Tunisia',date:'2026-06-15T02:00:00Z',venue:'Estadio Akron, Guadalajara',grp:'F'},
-  {home:'Spain',away:'Cabo Verde',date:'2026-06-15T16:00:00Z',venue:'Mercedes-Benz Stadium, Atlanta',grp:'H'},
-  {home:'Belgium',away:'Egypt',date:'2026-06-15T19:00:00Z',venue:'Lumen Field, Seattle',grp:'G'},
-  {home:'Saudi Arabia',away:'Uruguay',date:'2026-06-15T22:00:00Z',venue:'Hard Rock Stadium, Miami',grp:'H'},
-  {home:'Iran',away:'New Zealand',date:'2026-06-16T01:00:00Z',venue:'SoFi Stadium, Los Angeles',grp:'G'},
-  {home:'France',away:'Iraq',date:'2026-06-16T19:00:00Z',venue:'MetLife Stadium, New Jersey',grp:'I'},
-  {home:'Norway',away:'Senegal',date:'2026-06-16T22:00:00Z',venue:'Gillette Stadium, Boston',grp:'I'},
-  {home:'Argentina',away:'Algeria',date:'2026-06-17T01:00:00Z',venue:'Arrowhead Stadium, Kansas City',grp:'J'},
-  {home:'Austria',away:'Jordan',date:'2026-06-17T04:00:00Z',venue:'Levi’s Stadium, San Francisco',grp:'J'},
-  {home:'Portugal',away:'DR Congo',date:'2026-06-17T17:00:00Z',venue:'NRG Stadium, Houston',grp:'K'},
-  {home:'England',away:'Croatia',date:'2026-06-17T20:00:00Z',venue:'AT&T Stadium, Dallas',grp:'L'},
-  {home:'Ghana',away:'Panama',date:'2026-06-17T23:00:00Z',venue:'BMO Field, Toronto',grp:'L'},
-  {home:'Uzbekistan',away:'Colombia',date:'2026-06-18T02:00:00Z',venue:'Estadio Azteca, Mexico City',grp:'K'},
-];
-const DEMO_UPCOMING=FULL_SCHEDULE;
-let UPCOMING=DEMO_UPCOMING;
-
-const DEMO_PMS=[
-  {m:4,name:'Vinicius Jr.',team:'Brazil',pos:'F',min:90,rating:8.7,g:1,a:2,sot:4,kp:5,drb:8,dw:6,dt:11,ppi:8.3,ovr:10.9},
-  {m:4,name:'Raphinha',team:'Brazil',pos:'F',min:90,rating:8.2,g:2,a:0,sot:4,kp:2,drb:3,dw:4,dt:7,ppi:8.0,ovr:10.5},
-  {m:4,name:'A. Hakimi',team:'Morocco',pos:'D',min:90,rating:7.3,g:1,a:0,sot:2,kp:2,drb:3,dw:5,dt:9,ppi:7.0,ovr:9.2},
-  {m:14,name:'L. Yamal',team:'Spain',pos:'F',min:86,rating:8.8,g:1,a:1,sot:4,kp:4,drb:7,dw:5,dt:9,ppi:8.5,ovr:10.8},
-  {m:14,name:'Pedri',team:'Spain',pos:'M',min:90,rating:8.4,g:1,a:0,sot:2,kp:5,drb:3,dw:7,dt:10,ppi:8.0,ovr:10.3},
-  {m:14,name:'Rodri',team:'Spain',pos:'M',min:90,rating:8.1,g:0,a:1,sot:0,kp:3,drb:1,dw:9,dt:12,ppi:7.8,ovr:10.0},
-  {m:16,name:'K. Mbappe',team:'France',pos:'F',min:88,rating:9.2,g:2,a:1,sot:5,kp:3,drb:7,dw:7,dt:10,ppi:9.1,ovr:12.4},
-  {m:16,name:'A. Griezmann',team:'France',pos:'M',min:90,rating:8.0,g:0,a:2,sot:1,kp:5,drb:2,dw:4,dt:8,ppi:7.8,ovr:10.1},
-  {m:16,name:'W. Saliba',team:'France',pos:'D',min:90,rating:8.8,g:0,a:0,sot:0,kp:1,drb:1,dw:8,dt:9,ppi:8.0,ovr:10.7},
-  {m:18,name:'L. Messi',team:'Argentina',pos:'F',min:90,rating:8.9,g:1,a:1,sot:3,kp:4,drb:5,dw:6,dt:9,ppi:8.7,ovr:11.8},
-  {m:18,name:'J. Alvarez',team:'Argentina',pos:'F',min:90,rating:8.1,g:1,a:0,sot:2,kp:2,drb:2,dw:4,dt:7,ppi:7.9,ovr:10.4},
-  {m:18,name:'Dibu Martinez',team:'Argentina',pos:'G',min:90,rating:8.6,g:0,a:0,sot:0,kp:0,drb:0,dw:0,dt:0,ppi:7.7,ovr:10.2},
-  {m:20,name:'C. Ronaldo',team:'Portugal',pos:'F',min:90,rating:8.0,g:1,a:0,sot:4,kp:1,drb:2,dw:5,dt:9,ppi:7.7,ovr:10.1},
-  {m:20,name:'B. Fernandes',team:'Portugal',pos:'M',min:90,rating:8.2,g:0,a:1,sot:2,kp:6,drb:2,dw:5,dt:9,ppi:7.9,ovr:10.4},
-  {m:22,name:'J. Bellingham',team:'England',pos:'M',min:90,rating:8.6,g:1,a:0,sot:3,kp:4,drb:4,dw:6,dt:10,ppi:8.4,ovr:11.2},
-  {m:22,name:'H. Kane',team:'England',pos:'F',min:90,rating:8.3,g:1,a:1,sot:3,kp:2,drb:1,dw:5,dt:8,ppi:8.0,ovr:10.6},
-  {m:22,name:'B. Saka',team:'England',pos:'F',min:84,rating:7.8,g:0,a:1,sot:2,kp:3,drb:5,dw:4,dt:7,ppi:7.4,ovr:9.7},
-  {m:8,name:'J. Musiala',team:'Germany',pos:'M',min:88,rating:8.7,g:1,a:1,sot:3,kp:5,drb:6,dw:6,dt:9,ppi:8.4,ovr:10.6},
-  {m:8,name:'F. Wirtz',team:'Germany',pos:'M',min:90,rating:8.3,g:1,a:1,sot:2,kp:4,drb:4,dw:5,dt:8,ppi:8.0,ovr:10.2},
-];
-let PMS=DEMO_PMS;
-let KEEPERS=DEMO_KEEPERS;
 
 const TEAM_GROUP={};
 Object.entries(ALL_TEAMS).forEach(([L,teams])=>teams.forEach(t=>TEAM_GROUP[t]=L));
@@ -922,166 +916,95 @@ function initTeams(){
   renderTeam();
 }
 
-// BULLETPROOF STANDINGS LOGIC (Immune to NaN/Undefined API crashes)
-function getSafeStandings() {
-  const G = {};
-  Object.keys(ALL_TEAMS).forEach(L => { G[L] = []; });
-
-  // 1. Try to use official API standings safely
-  if (D.standings && D.standings.length > 0) {
-    D.standings.forEach(t => {
-      const L = t.group_name || 'A';
-      if (G[L]) G[L].push(t);
-    });
-    return G;
-  }
-
-  // 2. Local Fallback Generator
-  Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
-    teams.forEach(n => {
-      G[L].push({ team_name: n, group_name: L, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 });
-    });
-  });
-
-  if (D.isDemo) return G;
-
-  D.matches.forEach(m => {
-    if (!m || !m.home_team || !m.away_team) return;
-    
-    let ht, at;
-    for (const L in G) {
-      if (!ht) ht = G[L].find(t => t.team_name === m.home_team);
-      if (!at) at = G[L].find(t => t.team_name === m.away_team);
-    }
-
-    if (!ht) {
-       const g = getGroup(m) || 'A';
-       if (!G[g]) G[g] = [];
-       ht = { team_name: m.home_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
-       G[g].push(ht);
-    }
-    if (!at) {
-       const g = getGroup(m) || 'A';
-       if (!G[g]) G[g] = [];
-       at = { team_name: m.away_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
-       G[g].push(at);
-    }
-
-    const hs = parseInt(m.home_score);
-    const as = parseInt(m.away_score);
-
-    if (!isNaN(hs) && !isNaN(as)) {
-      ht.played++; at.played++;
-      ht.goals_for += hs; ht.goals_against += as;
-      at.goals_for += as; at.goals_against += hs;
-      ht.goals_diff = ht.goals_for - ht.goals_against;
-      at.goals_diff = at.goals_for - at.goals_against;
-
-      if (hs > as) { ht.win++; ht.points += 3; at.lose++; }
-      else if (hs < as) { at.win++; at.points += 3; ht.lose++; }
-      else { ht.draw++; at.draw++; ht.points++; at.points++; }
-    }
-  });
-
-  return G;
-}
-
+// ── STANDINGS LOGIC (With fully populated Live Fallback data) ──
 function renderStandings() {
   const el = document.getElementById('grpGrid');
   if (!el) return;
-  try {
-    const G = getSafeStandings();
-    const letters = Object.keys(G).filter(k => k !== 'undefined' && k !== '?').sort();
-    
-    if (letters.length === 0) {
-      el.innerHTML = '<div class="empty">Waiting for match data...</div>';
+  
+  let G = {};
+  
+  // Use Demo/Fallback data if no API standings are loaded yet
+  if (!D.standings || !D.standings.length) {
+    if (D.isDemo) {
+      Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
+        G[L] = [];
+        teams.forEach((n, i) => {
+          G[L].push({ team_name: n, group_name: L, rank: i+1, played: 0, win: 0, draw: 0, lose: 0, goals_diff: 0, points: 0, goals_for: 0 });
+        });
+      });
+    } else {
+      el.innerHTML = '<div class="empty">Standings appear once synced from API</div>';
       return;
     }
+  } else {
+    // Map the Standing data into Group buckets
+    D.standings.forEach(t => {
+      const L = t.group_name;
+      if (!G[L]) G[L] = [];
+      G[L].push(t);
+    });
+  }
 
-    let html = '';
-    letters.forEach(L => {
-      const rows = G[L] || [];
-      
-      // Strict integer sorting
-      rows.sort((a,b) => {
-        const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
-        if (ptsB !== ptsA) return ptsB - ptsA;
-        const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
-        if (gdB !== gdA) return gdB - gdA;
-        return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
-      });
-      
-      let trs = '';
-      rows.forEach((t, i) => {
-        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
-        const gd = parseInt(t.goals_diff)||0;
-        const gdStr = gd > 0 ? '+' + gd : gd;
-        
-        trs += '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name||'TBD')+'</td>'+
-               '<td>'+(t.played||0)+'</td><td>'+(t.win||0)+'</td><td>'+(t.draw||0)+'</td><td>'+(t.lose||0)+'</td>'+
-               '<td>'+gdStr+'</td><td class="pts">'+(t.points||0)+'</td></tr>';
-      });
-
-      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-        trs + '</tbody></table></div>';
+  let html = '';
+  // Sort Group A to L
+  Object.keys(G).sort().forEach(L => {
+    // Sort teams by rank/points
+    const rows = G[L].sort((a,b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+      return b.goals_for - a.goals_for;
     });
     
-    el.innerHTML = html;
-    renderThirdPlace(G);
-  } catch (err) {
-    el.innerHTML = '<div class="empty">Error calculating standings. Please check data.</div>';
-    console.error("Standings Error:", err);
-  }
+    html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
+      '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+      rows.map((t, i) => {
+        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+        const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+        return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+               '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
+               '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  });
+  el.innerHTML = html;
+  renderThirdPlace(G);
 }
 
 function renderThirdPlace(G) {
   const tb = document.getElementById('thirdBody');
   if (!tb) return;
-  try {
-    const thirds = [];
-    Object.keys(G).forEach(L => {
-      const rows = G[L] || [];
-      rows.sort((a,b) => {
-        const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
-        if (ptsB !== ptsA) return ptsB - ptsA;
-        const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
-        if (gdB !== gdA) return gdB - gdA;
-        return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
-      });
-      
-      if (rows.length >= 3 && (parseInt(rows[2].played)||0) > 0) {
-        thirds.push({ ...rows[2], group_name: L });
-      }
+  
+  const thirds = [];
+  Object.keys(G).forEach(L => {
+    const rows = G[L].sort((a,b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+      return b.goals_for - a.goals_for;
     });
-
-    if (thirds.length === 0) {
-      tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
-      return;
+    // Grab the 3rd place team regardless of if they played a game
+    if (rows.length >= 3 && rows[2]) {
+      thirds.push({...rows[2], group_name: L});
     }
+  });
 
-    thirds.sort((a, b) => {
-      const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
-      if (ptsB !== ptsA) return ptsB - ptsA;
-      const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
-      if (gdB !== gdA) return gdB - gdA;
-      return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
-    });
-
-    let trs = '';
-    thirds.forEach((t, i) => {
-      const adv = i < 8; 
-      const gd = parseInt(t.goals_diff)||0;
-      const gdStr = gd > 0 ? '+' + gd : gd;
-      
-      trs += '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name||'TBD')+'</td>'+
-             '<td>'+escapeText(t.group_name)+'</td><td>'+(t.played||0)+'</td><td>'+gdStr+'</td>'+
-             '<td>'+(t.goals_for||0)+'</td><td class="pts">'+(t.points||0)+'</td></tr>';
-    });
-    tb.innerHTML = trs;
-  } catch (err) {
-    console.error("Third Place Error:", err);
+  if (!thirds.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
+    return;
   }
+
+  // Rank the 3rd place teams against each other
+  thirds.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
+    return b.goals_for - a.goals_for;
+  });
+
+  tb.innerHTML = thirds.map((t, i) => {
+    const adv = i < 8; 
+    const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
+    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
+           '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
+           '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
+  }).join('');
 }
 
 function renderBracket(){
@@ -1182,6 +1105,7 @@ async function load(){
     sb('standings','select=*&limit=100')
   ]);
 
+  // If the API returns valid standings, use them. If not, the UI will fall back to DEMO_STANDINGS.
   if(st && st.length > 0) {
     D.standings = st;
   }
