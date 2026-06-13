@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WC2026 Analytics Pipeline
+WC2026 Analytics Pipeline (Patched)
 Runs every 30 mins via GitHub Actions
 Fetches finished World Cup matches → calculates PPI → saves to Supabase
 """
@@ -253,7 +253,7 @@ def save_events(fixture_id, events):
     print(f"  ✓ {len(rows)} events saved")
 
 def save_players_and_stats(fixture_id, players_data, lineups_data):
-    # Build position map from lineups (more specific than games.position)
+    # Build position map from lineups
     pos_map = {}
     for team in lineups_data:
         for entry in team.get('startXI', []) + team.get('substitutes', []):
@@ -261,7 +261,9 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             if p.get('id'):
                 pos_map[p['id']] = p.get('pos', '')
 
-    count = 0
+    player_profiles_to_upsert = []
+    player_stats_to_upsert = []
+
     for team_data in players_data:
         team_name = team_data.get('team', {}).get('name', '')
 
@@ -269,14 +271,15 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             player = player_entry.get('player', {})
             stats  = (player_entry.get('statistics') or [{}])[0]
             pid    = player.get('id')
+            
             if not pid:
                 continue
 
             position = (stats.get('games', {}) or {}).get('position', 'M') or 'M'
             pos_ppi  = calculate_ppi(stats, position)
 
-            # Upsert player profile
-            supabase.table('players').upsert({
+            # Stage player profile for bulk upsert
+            player_profiles_to_upsert.append({
                 'player_id':       pid,
                 'name':            player.get('name', ''),
                 'nationality':     player.get('nationality', ''),
@@ -284,7 +287,7 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'position':        position,
                 'position_detail': pos_map.get(pid, ''),
                 'photo_url':       player.get('photo', ''),
-            }).execute()
+            })
 
             g  = stats.get('goals', {})    or {}
             s  = stats.get('shots', {})    or {}
@@ -297,7 +300,8 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             gk = stats.get('goalkeeper',{})or {}
             c  = stats.get('cards', {})    or {}
 
-            supabase.table('player_match_stats').upsert({
+            # Stage match stats for bulk upsert
+            player_stats_to_upsert.append({
                 'fixture_id':          fixture_id,
                 'player_id':           pid,
                 'team':                team_name,
@@ -326,10 +330,15 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'goals_conceded':      gk.get('goals_conceded') or 0,
                 'position_ppi':        pos_ppi,
                 'overall_ppi':         None,
-            }).execute()
-            count += 1
+            })
 
-    print(f"  ✓ {count} player records saved")
+    # Execute Bulk Upserts outside the loop
+    if player_profiles_to_upsert:
+        supabase.table('players').upsert(player_profiles_to_upsert).execute()
+    if player_stats_to_upsert:
+        supabase.table('player_match_stats').upsert(player_stats_to_upsert).execute()
+
+    print(f"  ✓ {len(player_stats_to_upsert)} player records saved")
     update_overall_ppi(fixture_id)
 
 def update_overall_ppi(fixture_id):
@@ -349,8 +358,9 @@ def update_overall_ppi(fixture_id):
         if avg == 0:
             continue
 
+        # Fetch using player_id instead of id
         match_players = supabase.table('player_match_stats')\
-            .select('id, position_ppi')\
+            .select('player_id, position_ppi')\
             .eq('fixture_id', fixture_id)\
             .eq('position', pos)\
             .execute()
@@ -358,9 +368,11 @@ def update_overall_ppi(fixture_id):
         for row in match_players.data:
             if row.get('position_ppi'):
                 overall = round(min((row['position_ppi'] / avg) * 10, 15.0), 2)
+                # Update explicitly checking fixture_id AND player_id
                 supabase.table('player_match_stats')\
                     .update({'overall_ppi': overall})\
-                    .eq('id', row['id'])\
+                    .eq('fixture_id', fixture_id)\
+                    .eq('player_id', row['player_id'])\
                     .execute()
 
     print(f"  ✓ Overall PPI normalised")
