@@ -222,6 +222,174 @@ def update_standings():
     if rows:
         supabase.table('standings').upsert(rows).execute()
         print(f"  ✓ Standings synced directly from API ({len(rows)} unique teams)")
+
+def save_match(fixture, stats_data):
+    home_id = fixture['teams']['home']['id']
+    home_stats, away_stats = {}, {}
+
+    for team in stats_data:
+        stat_map = {s['type']: s['value'] for s in team.get('statistics', [])}
+        if team['team']['id'] == home_id:
+            home_stats = stat_map
+        else:
+            away_stats = stat_map
+
+    row = {
+        'fixture_id':             fixture['fixture']['id'],
+        'home_team':              fixture['teams']['home']['name'],
+        'away_team':              fixture['teams']['away']['name'],
+        'home_team_id':           fixture['teams']['home']['id'],
+        'away_team_id':           fixture['teams']['away']['id'],
+        'home_score':             fixture['goals']['home'] or 0,
+        'away_score':             fixture['goals']['away'] or 0,
+        'date':                   fixture['fixture']['date'],
+        'round':                  fixture['league']['round'],
+        'group_name':             fixture['league'].get('group', ''),
+        'venue':                  fixture['fixture']['venue']['name'],
+        'city':                   fixture['fixture']['venue']['city'],
+        'status':                 fixture['fixture']['status']['short'],
+        'home_possession':        safe_int(str(home_stats.get('Ball Possession', '0')).replace('%','')),
+        'away_possession':        safe_int(str(away_stats.get('Ball Possession', '0')).replace('%','')),
+        'home_shots':             safe_int(home_stats.get('Total Shots')),
+        'away_shots':             safe_int(away_stats.get('Total Shots')),
+        'home_shots_on_target':   safe_int(home_stats.get('Shots on Goal')),
+        'away_shots_on_target':   safe_int(away_stats.get('Shots on Goal')),
+        'home_xg':                safe_float(home_stats.get('expected_goals')),
+        'away_xg':                safe_float(away_stats.get('expected_goals')),
+        'home_corners':           safe_int(home_stats.get('Corner Kicks')),
+        'away_corners':           safe_int(away_stats.get('Corner Kicks')),
+        'home_passes':            safe_int(home_stats.get('Total passes')),
+        'away_passes':            safe_int(away_stats.get('Total passes')),
+        'home_passes_accuracy':   safe_int(str(home_stats.get('Passes %', '0')).replace('%','')),
+        'away_passes_accuracy':   safe_int(str(away_stats.get('Passes %', '0')).replace('%','')),
+        'home_yellow_cards':      safe_int(home_stats.get('Yellow Cards')) or 0,
+        'away_yellow_cards':      safe_int(away_stats.get('Yellow Cards')) or 0,
+        'home_red_cards':         safe_int(home_stats.get('Red Cards')) or 0,
+        'away_red_cards':         safe_int(away_stats.get('Red Cards')) or 0,
+    }
+
+    supabase.table('matches').upsert(row).execute()
+    print(f"  ✓ Match: {row['home_team']} {row['home_score']}-{row['away_score']} {row['away_team']}")
+
+def save_events(fixture_id, events):
+    rows = [{
+        'fixture_id':   fixture_id,
+        'team':         e.get('team', {}).get('name', ''),
+        'player_id':    e.get('player', {}).get('id'),
+        'player_name':  e.get('player', {}).get('name', ''),
+        'type':         e.get('type', ''),
+        'detail':       e.get('detail', ''),
+        'minute':       e.get('time', {}).get('elapsed'),
+        'extra_minute': e.get('time', {}).get('extra'),
+    } for e in events]
+
+    if rows:
+        supabase.table('match_events').upsert(rows).execute()
+    print(f"  ✓ {len(rows)} events saved")
+
+def save_players_and_stats(fixture_id, players_data, lineups_data):
+    pos_map = {}
+    for team in lineups_data:
+        for entry in team.get('startXI', []) + team.get('substitutes', []):
+            p = entry.get('player', {})
+            if p.get('id'):
+                pos_map[p['id']] = p.get('pos', '')
+
+    player_profiles_to_upsert = []
+    player_stats_to_upsert = []
+
+    for team_data in players_data:
+        team_name = team_data.get('team', {}).get('name', '')
+        for player_entry in team_data.get('players', []):
+            player = player_entry.get('player', {})
+            stats  = (player_entry.get('statistics') or [{}])[0]
+            pid    = player.get('id')
+            
+            if not pid:
+                continue
+
+            position = (stats.get('games', {}) or {}).get('position', 'M') or 'M'
+            pos_ppi  = calculate_ppi(stats, position)
+
+            player_profiles_to_upsert.append({
+                'player_id':       pid,
+                'name':            player.get('name', ''),
+                'nationality':     player.get('nationality', ''),
+                'team':            team_name,
+                'position':        position,
+                'position_detail': pos_map.get(pid, ''),
+                'photo_url':       player.get('photo', ''),
+            })
+
+            g  = stats.get('goals', {})    or {}
+            s  = stats.get('shots', {})    or {}
+            p_ = stats.get('passes', {})   or {}
+            t  = stats.get('tackles', {})  or {}
+            d  = stats.get('duels', {})    or {}
+            dr = stats.get('dribbles', {}) or {}
+            f  = stats.get('fouls', {})    or {}
+            gm = stats.get('games', {})    or {}
+            gk = stats.get('goalkeeper',{})or {}
+            c  = stats.get('cards', {})    or {}
+
+            player_stats_to_upsert.append({
+                'fixture_id':          fixture_id,
+                'player_id':           pid,
+                'team':                team_name,
+                'position':            position,
+                'position_detail':     pos_map.get(pid, ''),
+                'minutes_played':      gm.get('minutes') or 0,
+                'rating':              safe_float(gm.get('rating')),
+                'goals':               g.get('total') or 0,
+                'assists':             g.get('assists') or 0,
+                'shots_total':         s.get('total') or 0,
+                'shots_on_target':     s.get('on') or 0,
+                'key_passes':          p_.get('key') or 0,
+                'passes_total':        p_.get('total') or 0,
+                'passes_accuracy':     safe_int(str(p_.get('accuracy') or '0').replace('%','')) or 0,
+                'dribbles_attempted':  dr.get('attempts') or 0,
+                'dribbles_completed':  dr.get('success') or 0,
+                'duels_total':         d.get('total') or 0,
+                'duels_won':           d.get('won') or 0,
+                'tackles':             t.get('total') or 0,
+                'interceptions':       t.get('interceptions') or 0,
+                'fouls_drawn':         f.get('drawn') or 0,
+                'fouls_committed':     f.get('committed') or 0,
+                'yellow_cards':        c.get('yellow') or 0,
+                'red_cards':           c.get('red') or 0,
+                'saves':               gk.get('saves') or 0,
+                'goals_conceded':      gk.get('goals_conceded') or 0,
+                'position_ppi':        pos_ppi,
+                'overall_ppi':         None,
+            })
+
+    if player_profiles_to_upsert:
+        supabase.table('players').upsert(player_profiles_to_upsert).execute()
+    if player_stats_to_upsert:
+        supabase.table('player_match_stats').upsert(player_stats_to_upsert).execute()
+
+    print(f"  ✓ {len(player_stats_to_upsert)} player records saved")
+    update_overall_ppi(fixture_id)
+
+def update_overall_ppi(fixture_id):
+    for pos in ['F', 'M', 'D', 'G']:
+        all_ppis = supabase.table('player_match_stats').select('position_ppi').eq('position', pos).gt('minutes_played', 44).execute()
+        ppis = [r['position_ppi'] for r in all_ppis.data if r.get('position_ppi')]
+        if not ppis:
+            continue
+
+        avg = sum(ppis) / len(ppis)
+        if avg == 0:
+            continue
+
+        match_players = supabase.table('player_match_stats').select('player_id, position_ppi').eq('fixture_id', fixture_id).eq('position', pos).execute()
+
+        for row in match_players.data:
+            if row.get('position_ppi'):
+                overall = round(min((row['position_ppi'] / avg) * 10, 15.0), 2)
+                supabase.table('player_match_stats').update({'overall_ppi': overall}).eq('fixture_id', fixture_id).eq('player_id', row['player_id']).execute()
+
+    print(f"  ✓ Overall PPI normalised")
 # ── MAIN ─────────────────────────────────────────────────────────────────────
 
 def run():
