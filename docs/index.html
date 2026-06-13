@@ -353,7 +353,6 @@
   </div>
 </section>
 
-
 <main class="main">
 
   <div class="pane active" id="p-overview">
@@ -525,6 +524,17 @@
 <footer class="foot"><span>World Cup 2026 Analytics &nbsp;&middot;&nbsp; by <em>Lutuf Abdulla</em></span></footer>
 
 <script>
+// UI Protection Utility (Prevents layout breaks and simple XSS)
+const escapeText = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const SUPABASE_URL='https://grubvwyjhnnluecdfntw.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdydWJ2d3lqaG5ubHVlY2RmbnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MzQxMTcsImV4cCI6MjA5NjQxMDExN30.2tMthbzpP3hnrhD90TKtrJTHpIQ8NFm8n_qtg5Hjb6U';
 const headers={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
@@ -682,22 +692,22 @@ async function sb(t,p){try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?'+p,
 function tab(n,b){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tabs .tab').forEach(t=>t.classList.remove('active'));document.getElementById('p-'+n).classList.add('active');b.classList.add('active');if(n==='lab')setTimeout(()=>{labCharts();heatmap();},40);}
 function mCard(m,demo){
   const hw=m.home_score>m.away_score,aw=m.away_score>m.home_score,hp=m.home_possession||50,ap=m.away_possession||50;
-  return '<div class="match"><div class="match-meta">'+(m.round||'Group')+(demo?' / sample':'')+'</div>'+
-    '<div class="match-row"><div class="mt-name">'+flag(m.home_team)+m.home_team+'</div><div class="mt-score '+(hw?'win':aw?'lose':'drw')+'">'+m.home_score+'</div></div>'+
-    '<div class="match-row"><div class="mt-name">'+flag(m.away_team)+m.away_team+'</div><div class="mt-score '+(aw?'win':hw?'lose':'drw')+'">'+m.away_score+'</div></div>'+
+  return '<div class="match"><div class="match-meta">'+escapeText(m.round||'Group')+(demo?' / sample':'')+'</div>'+
+    '<div class="match-row"><div class="mt-name">'+flag(m.home_team)+escapeText(m.home_team)+'</div><div class="mt-score '+(hw?'win':aw?'lose':'drw')+'">'+m.home_score+'</div></div>'+
+    '<div class="match-row"><div class="mt-name">'+flag(m.away_team)+escapeText(m.away_team)+'</div><div class="mt-score '+(aw?'win':hw?'lose':'drw')+'">'+m.away_score+'</div></div>'+
     '<div class="match-line"></div><div class="match-stats">'+
     '<div class="msv">'+hp+'%</div><div class="msl">Possession</div><div class="msv a">'+ap+'%</div>'+
     '<div class="mbar"><i style="flex:'+hp+';background:linear-gradient(90deg,var(--gold),var(--gold2))"></i><i style="flex:'+ap+';background:var(--surf3)"></i></div>'+
     '<div class="msv">'+(m.home_shots||'-')+'</div><div class="msl">Shots</div><div class="msv a">'+(m.away_shots||'-')+'</div>'+
-    '<div class="msv" style="color:var(--green)">'+(m.home_xg?m.home_xg.toFixed(1):'-')+'</div><div class="msl">Expected goals</div><div class="msv a" style="color:var(--green)">'+(m.away_xg?m.away_xg.toFixed(1):'-')+'</div>'+
+    '<div class="msv" style="color:var(--green)">'+(m.home_xg?Number(m.home_xg).toFixed(1):'-')+'</div><div class="msl">Expected goals</div><div class="msv a" style="color:var(--green)">'+(m.away_xg?Number(m.away_xg).toFixed(1):'-')+'</div>'+
     '</div></div>';
 }
 function ppiBoard(pl){
   if(!pl.length||D.isDemo)return '<tr><td colspan="5"><div class="empty">Player ratings appear after the first match</div></td></tr>';
   const mx=pl[0]?.overall_ppi||15;
-  return pl.slice(0,15).map((p,i)=>'<tr><td class="rk '+(i===0?'top':'')+'">'+(i+1)+'</td><td><div class="pn">'+flag(p.team)+p.name+'</div><div class="ptm">'+p.team+' / '+p.matches_played+'G</div></td><td><span class="pos pos-'+(p.position||'M').charAt(0)+'">'+(p.position||'M').charAt(0)+'</span></td><td><span class="ppi">'+p.overall_ppi.toFixed(1)+'</span></td><td><div class="ppibar"><i style="width:'+(p.overall_ppi/mx*100)+'%"></i></div></td></tr>').join('');
+  return pl.slice(0,15).map((p,i)=>'<tr><td class="rk '+(i===0?'top':'')+'">'+(i+1)+'</td><td><div class="pn">'+flag(p.team)+escapeText(p.name)+'</div><div class="ptm">'+escapeText(p.team)+' / '+p.matches_played+'G</div></td><td><span class="pos pos-'+(p.position||'M').charAt(0)+'">'+escapeText(p.position||'M').charAt(0)+'</span></td><td><span class="ppi">'+Number(p.overall_ppi||0).toFixed(1)+'</span></td><td><div class="ppibar"><i style="width:'+(p.overall_ppi/mx*100)+'%"></i></div></td></tr>').join('');
 }
-function scorers(pl){if(!pl.length)return '<div class="empty">No goals yet &mdash; check back after kickoff</div>';return pl.map((p,i)=>'<div class="scr"><div class="scr-rk '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="scr-n">'+flag(p.team)+p.name+'</div><div class="scr-tm">'+p.team+'</div></div><div class="scr-g">'+p.total_goals+'<span class="scr-glbl">G</span></div><div class="scr-a">'+p.total_assists+' AST</div></div>').join('');}
+function scorers(pl){if(!pl.length)return '<div class="empty">No goals yet &mdash; check back after kickoff</div>';return pl.map((p,i)=>'<div class="scr"><div class="scr-rk '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="scr-n">'+flag(p.team)+escapeText(p.name)+'</div><div class="scr-tm">'+escapeText(p.team)+'</div></div><div class="scr-g">'+p.total_goals+'<span class="scr-glbl">G</span></div><div class="scr-a">'+p.total_assists+' AST</div></div>').join('');}
 
 function fmtDay(d){
   if(d==='TBD')return{tag:'Upcoming',sub:''};
@@ -708,7 +718,7 @@ function fmtDay(d){
 function renderSpotlight(){
   const el=document.getElementById('spotList');if(!el)return;
   const top=D.ppi.slice(0,4);
-  el.innerHTML=top.map((p,i)=>'<div class="spot-row"><div class="spot-rank '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="spot-nm">'+p.name+'</div><div class="spot-tm">'+p.team+'</div></div><div class="spot-val">'+p.overall_ppi.toFixed(1)+'</div></div>').join('');
+  el.innerHTML=top.map((p,i)=>'<div class="spot-row"><div class="spot-rank '+(i===0?'top':'')+'">'+(i+1)+'</div><div style="flex:1"><div class="spot-nm">'+escapeText(p.name)+'</div><div class="spot-tm">'+escapeText(p.team)+'</div></div><div class="spot-val">'+Number(p.overall_ppi||0).toFixed(1)+'</div></div>').join('');
 }
 function renderNextMatch(){
   const el=document.getElementById('nextMatch');if(!el)return;
@@ -718,13 +728,13 @@ function renderNextMatch(){
   const opts={weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dubai'};
   const when=next.d.toLocaleString('en-AE',opts)+' UAE';
   el.innerHTML='<div class="nm-label">Next match</div>'+
-    '<div class="nm-grp">Group '+next.grp+'</div>'+
+    '<div class="nm-grp">Group '+escapeText(next.grp)+'</div>'+
     '<div class="nm-teams">'+
-    '<div class="nm-team">'+flagImg(next.home)+'<span>'+next.home+'</span></div>'+
+    '<div class="nm-team">'+flagImg(next.home)+'<span>'+escapeText(next.home)+'</span></div>'+
     '<div class="nm-vs">VS</div>'+
-    '<div class="nm-team">'+flagImg(next.away)+'<span>'+next.away+'</span></div>'+
+    '<div class="nm-team">'+flagImg(next.away)+'<span>'+escapeText(next.away)+'</span></div>'+
     '</div>'+
-    '<div class="nm-info"><div class="nm-time">'+when+'</div><div class="nm-venue">'+(next.venue||'')+'</div></div>';
+    '<div class="nm-info"><div class="nm-time">'+escapeText(when)+'</div><div class="nm-venue">'+escapeText(next.venue||'')+'</div></div>';
 }
 function flagImg(n){const c=FLAGS[n];return c?'<img src="https://flagcdn.com/w80/'+c+'.png" alt="">':'<span style="width:42px;height:28px"></span>';}
 function renderDays(){
@@ -736,12 +746,12 @@ function renderDays(){
   let dates=Object.keys(g).sort((a,b)=>b.localeCompare(a));
   if(filt!=='all')dates=dates.filter(d=>d===filt);
   let html='';
-  dates.forEach(d=>{const f=fmtDay(d);html+='<div class="day"><div class="day-tag">'+(f.tag.replace(/(\d+)/,'<em>$1</em>'))+'</div>'+(f.sub?'<div class="day-sub">'+f.sub+'</div>':'')+'</div><div class="day-grid">'+g[d].map(x=>mCard(x,false)).join('')+'</div>';});
+  dates.forEach(d=>{const f=fmtDay(d);html+='<div class="day"><div class="day-tag">'+(escapeText(f.tag).replace(/(\d+)/,'<em>$1</em>'))+'</div>'+(f.sub?'<div class="day-sub">'+escapeText(f.sub)+'</div>':'')+'</div><div class="day-grid">'+g[d].map(x=>mCard(x,false)).join('')+'</div>';});
   el.innerHTML=html||'<div class="empty">No matches on this date</div>';
 }
 function initDateSel(){
   const dates=[...new Set(D.matches.map(m=>String(m.date).slice(0,10)))].sort((a,b)=>b.localeCompare(a));
-  document.getElementById('dateSel').innerHTML='<option value="all">All matchdays</option>'+dates.map(d=>{const f=fmtDay(d);return '<option value="'+d+'">'+f.tag+(f.sub?' &middot; '+f.sub:'')+'</option>';}).join('');
+  document.getElementById('dateSel').innerHTML='<option value="all">All matchdays</option>'+dates.map(d=>{const f=fmtDay(d);return '<option value="'+escapeText(d)+'">'+escapeText(f.tag)+(f.sub?' &middot; '+escapeText(f.sub):'')+'</option>';}).join('');
 }
 function computeStorylines(){
   if(D.isDemo){
@@ -751,6 +761,7 @@ function computeStorylines(){
   }
   const agg={};
   D.matches.forEach(m=>{
+    const add=(n,gl,xg)=>{const a=agg[n]=agg[n]||{g:0,xg:0};a.g+=(gl||0);a.xg+=(xg||0);};
     add(m.home_team,m.home_score,m.home_xg);add(m.away_team,m.away_score,m.away_xg);
   });
   const ts=Object.entries(agg).map(([name,v])=>({name,g:v.g,xg:v.xg}));
@@ -787,34 +798,34 @@ function genContent(){
 
   // 2. xG story
   if(m.home_xg&&m.away_xg){
-    const xgH=m.home_xg.toFixed(1),xgA=m.away_xg.toFixed(1);
+    const xgH=Number(m.home_xg).toFixed(1),xgA=Number(m.away_xg).toFixed(1);
     a.push({t:'xg',l:'📊 xG Story',
       x:m.home_team+' '+score+' '+m.away_team+'\n\nThe scoreline lied.\n\nxG: '+m.home_team+' '+xgH+' vs '+m.away_team+' '+xgA+'\n\n'+unlucky+' were actually the better team by the numbers.\n\nExpected goals strips away luck and shows who created the real danger.\n\n#WC2026Analytics'});
   }
 
   // 3. Tactical breakdown
   a.push({t:'tac',l:'🎯 Tactical Angle',
-    x:m.home_team+' '+score+' '+m.away_team+' | Tactical Breakdown\n\n'+'Possession: '+m.home_team+' '+m.home_possession+'% vs '+m.away_team+' '+m.away_possession+'%\n'+'Shots: '+(m.home_shots||'—')+' vs '+(m.away_shots||'—')+'\n'+(m.home_xg?'xG: '+m.home_xg.toFixed(1)+' vs '+m.away_xg.toFixed(1)+'\n':'')+'\n'+(domPoss>=60?dom+' controlled the tempo but did it translate into the result?':winner?winner+' won it without controlling possession — efficiency over dominance.':'Both sides cancelled each other out in a closely-contested tactical battle.')+'\n\n#WC2026 #Tactics'});
+    x:m.home_team+' '+score+' '+m.away_team+' | Tactical Breakdown\n\n'+'Possession: '+m.home_team+' '+m.home_possession+'% vs '+m.away_team+' '+m.away_possession+'%\n'+'Shots: '+(m.home_shots||'—')+' vs '+(m.away_shots||'—')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1)+'\n':'')+'\n'+(domPoss>=60?dom+' controlled the tempo but did it translate into the result?':winner?winner+' won it without controlling possession — efficiency over dominance.':'Both sides cancelled each other out in a closely-contested tactical battle.')+'\n\n#WC2026 #Tactics'});
 
   // 4. Player spotlight (MOM)
   if(mom){
     a.push({t:'hook',l:'⭐ Player Spotlight (MOM)',
-      x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+mom.ovr.toFixed(1)+' | Goals: '+mom.g+' | Assists: '+mom.a+'\nKey passes: '+mom.kp+' | Dribbles: '+mom.drb+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+mom.name.replace(/[^a-zA-Z]/g,'')+' #'+mom.team.replace(/ /g,'')});
+      x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+Number(mom.ovr||0).toFixed(1)+' | Goals: '+mom.g+' | Assists: '+mom.a+'\nKey passes: '+mom.kp+' | Dribbles: '+mom.drb+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+mom.name.replace(/[^a-zA-Z]/g,'')+' #'+mom.team.replace(/ /g,'')});
   }
 
   // 5. Instagram carousel structure
   a.push({t:'tac',l:'📱 IG Carousel Structure',
-    x:'SLIDE 1 — Hook\n"'+m.home_team+' '+score+' '+m.away_team+' — The data breakdown"\n\nSLIDE 2 — Key Stats\nPossession: '+m.home_possession+'% vs '+m.away_possession+'%\nShots: '+(m.home_shots||'?')+' vs '+(m.away_shots||'?')+'\n'+(m.home_xg?'xG: '+m.home_xg.toFixed(1)+' vs '+m.away_xg.toFixed(1):'')+'\n\nSLIDE 3 — Best Player\n'+( mom?mom.name+' — PPI '+mom.ovr.toFixed(1):'See our full player ratings')+'\n\nSLIDE 4 — xG Story\nWho really deserved to win?\n\nSLIDE 5 — CTA\n"Full analytics at [your link in bio]"'});
+    x:'SLIDE 1 — Hook\n"'+m.home_team+' '+score+' '+m.away_team+' — The data breakdown"\n\nSLIDE 2 — Key Stats\nPossession: '+m.home_possession+'% vs '+m.away_possession+'%\nShots: '+(m.home_shots||'?')+' vs '+(m.away_shots||'?')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1):'')+'\n\nSLIDE 3 — Best Player\n'+( mom?mom.name+' — PPI '+Number(mom.ovr||0).toFixed(1):'See our full player ratings')+'\n\nSLIDE 4 — xG Story\nWho really deserved to win?\n\nSLIDE 5 — CTA\n"Full analytics at [your link in bio]"'});
 
   // 6. TikTok / Reels script
   a.push({t:'xg',l:'🎬 TikTok / Reels Script',
-    x:'[Hook — 0-2s]\n"'+m.home_team+' '+score+' '+m.away_team+' — but was it fair?"\n\n[Data reveal — 2-8s]\n"The xG was '+(m.home_xg?m.home_xg.toFixed(1)+' to '+m.away_xg.toFixed(1):'actually closer than the score')+'. '+unlucky+' created more danger but couldn\'t convert."\n\n[Player focus — 8-15s]\n'+(mom?'"'+mom.name+' was the standout. PPI '+mom.ovr.toFixed(1)+', '+(mom.g+mom.a)+' goal contributions, ran the show."':'"Check the full player ratings in the link."')+'\n\n[CTA — 15-20s]\n"Full breakdown on the dashboard — link in bio. Follow for every match."'});
+    x:'[Hook — 0-2s]\n"'+m.home_team+' '+score+' '+m.away_team+' — but was it fair?"\n\n[Data reveal — 2-8s]\n"The xG was '+(m.home_xg?Number(m.home_xg).toFixed(1)+' to '+Number(m.away_xg).toFixed(1):'actually closer than the score')+'. '+unlucky+' created more danger but couldn\'t convert."\n\n[Player focus — 8-15s]\n'+(mom?'"'+mom.name+' was the standout. PPI '+Number(mom.ovr||0).toFixed(1)+', '+(mom.g+mom.a)+' goal contributions, ran the show."':'"Check the full player ratings in the link."')+'\n\n[CTA — 15-20s]\n"Full breakdown on the dashboard — link in bio. Follow for every match."'});
 
   // 7. Twitter/X thread starter
   a.push({t:'hook',l:'🐦 Twitter/X Thread',
-    x:'🧵 '+m.home_team+' '+score+' '+m.away_team+' — full data breakdown:\n\n1/ Scoreline: '+m.home_team+' '+score+' '+m.away_team+(m.home_xg?' (xG: '+m.home_xg.toFixed(1)+' - '+m.away_xg.toFixed(1)+')':'')+'\n\n2/ Possession: '+m.home_team+' '+m.home_possession+'% dominated the ball'+(domPoss>=60?'. '+m.away_team+' were content to defend and counter.':'. A fairly even split.')+'\n\n3/ '+(mom?'MOM: '+mom.name+' (PPI '+mom.ovr.toFixed(1)+'). '+mom.g+'G/'+mom.a+'A':'Player ratings: full breakdown on the dashboard')+'\n\n4/ Full player stats, xG model and tactical breakdown → [link]\n\n#WC2026 #WorldCup'});
+    x:'🧵 '+m.home_team+' '+score+' '+m.away_team+' — full data breakdown:\n\n1/ Scoreline: '+m.home_team+' '+score+' '+m.away_team+(m.home_xg?' (xG: '+Number(m.home_xg).toFixed(1)+' - '+Number(m.away_xg).toFixed(1)+')':'')+'\n\n2/ Possession: '+m.home_team+' '+m.home_possession+'% dominated the ball'+(domPoss>=60?'. '+m.away_team+' were content to defend and counter.':'. A fairly even split.')+'\n\n3/ '+(mom?'MOM: '+mom.name+' (PPI '+Number(mom.ovr||0).toFixed(1)+'). '+mom.g+'G/'+mom.a+'A':'Player ratings: full breakdown on the dashboard')+'\n\n4/ Full player stats, xG model and tactical breakdown → [link]\n\n#WC2026 #WorldCup'});
 
-  document.getElementById('angles').innerHTML=a.map(o=>'<div class="angle"><span class="atag at-'+o.t+'">'+o.l+'</span><div class="atxt" style="white-space:pre-line">'+o.x+'</div><button class="cpy" onclick="cpy(this,\'Copy\',\'Copied ✓\')" data-t="'+o.x.replace(/"/g,'&quot;').replace(/\n/g,'\\n')+'">Copy</button></div>').join('');
+  document.getElementById('angles').innerHTML=a.map(o=>'<div class="angle"><span class="atag at-'+escapeText(o.t)+'">'+escapeText(o.l)+'</span><div class="atxt" style="white-space:pre-line">'+escapeText(o.x)+'</div><button class="cpy" onclick="cpy(this,\'Copy\',\'Copied ✓\')" data-t="'+escapeText(o.x).replace(/"/g,'&quot;').replace(/\n/g,'\\n')+'">Copy</button></div>').join('');
 }
 function cpy(b,defTxt,doneTxt){
   const raw=b.getAttribute('data-t').replace(/\\n/g,'\n');
@@ -833,7 +844,7 @@ function renderByMatch(){
   document.getElementById('pmMatchTitle').textContent=matchLabel(idx);
   const rows=PMS.filter(p=>p.m===idx).sort((a,b)=>b.ovr-a.ovr);
   if(!rows.length){document.getElementById('pmBody').innerHTML='<tr><td colspan="10"><div class="empty">No player data for this match yet</div></td></tr>';return;}
-  document.getElementById('pmBody').innerHTML=rows.map((p,i)=>'<tr><td class="rk '+(i===0?'top':'')+'">'+(i+1)+'</td><td><div class="pn">'+p.name+'</div><div class="ptm">'+p.team+'</div></td><td><span class="pos pos-'+p.pos+'">'+p.pos+'</span></td><td><span class="ppi">'+p.ovr.toFixed(1)+'</span></td><td class="num">'+p.g+'</td><td class="num">'+p.a+'</td><td class="num">'+p.rating.toFixed(1)+'</td><td class="num">'+p.kp+'</td><td class="num">'+p.drb+'</td><td class="num">'+p.dw+'/'+p.dt+'</td></tr>').join('');
+  document.getElementById('pmBody').innerHTML=rows.map((p,i)=>'<tr><td class="rk '+(i===0?'top':'')+'">'+(i+1)+'</td><td><div class="pn">'+escapeText(p.name)+'</div><div class="ptm">'+escapeText(p.team)+'</div></td><td><span class="pos pos-'+escapeText(p.pos)+'">'+escapeText(p.pos)+'</span></td><td><span class="ppi">'+Number(p.ovr||0).toFixed(1)+'</span></td><td class="num">'+p.g+'</td><td class="num">'+p.a+'</td><td class="num">'+Number(p.rating||0).toFixed(1)+'</td><td class="num">'+p.kp+'</td><td class="num">'+p.drb+'</td><td class="num">'+p.dw+'/'+p.dt+'</td></tr>').join('');
 }
 function renderByPlayer(){
   const name=document.getElementById('ppPlayerSel').value;
@@ -842,7 +853,7 @@ function renderByPlayer(){
   const g0=games[0],totG=games.reduce((s,x)=>s+x.g,0),totA=games.reduce((s,x)=>s+x.a,0);
   const avgPPI=(games.reduce((s,x)=>s+x.ovr,0)/games.length).toFixed(1);
   const posCol={F:'pos-F',M:'pos-M',D:'pos-D',G:'pos-G'}[g0.pos];
-  let html='<div class="pp-hero"><div><div class="pp-name">'+flag(g0.team)+name+'<span class="pos '+posCol+' pp-pos">'+g0.pos+'</span></div><div class="pp-meta">'+g0.team+'</div></div>'+
+  let html='<div class="pp-hero"><div><div class="pp-name">'+flag(g0.team)+escapeText(name)+'<span class="pos '+posCol+' pp-pos">'+escapeText(g0.pos)+'</span></div><div class="pp-meta">'+escapeText(g0.team)+'</div></div>'+
     '<div class="pp-totals">'+
     '<div class="pp-tot"><div class="pp-tot-n" style="color:var(--gold);text-shadow:0 0 18px var(--gold-glow)">'+avgPPI+'</div><div class="pp-tot-l">Avg PPI</div></div>'+
     '<div class="pp-tot"><div class="pp-tot-n" style="color:var(--green)">'+totG+'</div><div class="pp-tot-l">Goals</div></div>'+
@@ -851,7 +862,7 @@ function renderByPlayer(){
     '</div></div>';
   html+='<div class="card"><div class="card-h"><div class="card-t">Match by match</div><div class="card-s">PPI PER GAME</div></div>'+
     '<div class="tblwrap"><table class="tbl ptbl ptbl-wide"><thead><tr><th>Match</th><th>PPI</th><th>G</th><th>A</th><th>Rtg</th><th>KP</th><th>Drb</th><th>Min</th></tr></thead><tbody>'+
-    games.map(x=>'<tr><td><div class="pn">'+matchLabel(x.m)+'</div></td><td><span class="ppi">'+x.ovr.toFixed(1)+'</span></td><td class="num">'+x.g+'</td><td class="num">'+x.a+'</td><td class="num">'+x.rating.toFixed(1)+'</td><td class="num">'+x.kp+'</td><td class="num">'+x.drb+'</td><td class="num">'+x.min+'</td></tr>').join('')+
+    games.map(x=>'<tr><td><div class="pn">'+escapeText(matchLabel(x.m))+'</div></td><td><span class="ppi">'+Number(x.ovr||0).toFixed(1)+'</span></td><td class="num">'+x.g+'</td><td class="num">'+x.a+'</td><td class="num">'+Number(x.rating||0).toFixed(1)+'</td><td class="num">'+x.kp+'</td><td class="num">'+x.drb+'</td><td class="num">'+x.min+'</td></tr>').join('')+
     '</tbody></table></div></div>';
   document.getElementById('ppProfile').innerHTML=html;
 }
@@ -859,7 +870,7 @@ function filterPlayers(){
   const q=(document.getElementById('ppSearch').value||'').toLowerCase();
   const names=[...new Set(PMS.map(p=>p.name))].sort();
   const filtered=q?names.filter(n=>n.toLowerCase().includes(q)):names;
-  document.getElementById('ppPlayerSel').innerHTML=filtered.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+  document.getElementById('ppPlayerSel').innerHTML=filtered.map(n=>'<option value="'+escapeText(n)+'">'+escapeText(n)+'</option>').join('');
   if(filtered.length>0)renderByPlayer();
   else document.getElementById('ppProfile').innerHTML='<div class="empty">No players matching that name</div>';
 }
@@ -871,7 +882,7 @@ function initPlayers(){
   document.getElementById('pmMatchSel').innerHTML=mList.map((m,i)=>{
     const ht=m.home_team||m.home,at=m.away_team||m.away;
     const sc=m.home_score!==undefined&&m.home_score!=='?'?m.home_score+'-'+m.away_score:'vs';
-    return '<option value="'+i+'" '+(i===defaultM?'selected':'')+'>'+ht+' '+sc+' '+at+'</option>';
+    return '<option value="'+i+'" '+(i===defaultM?'selected':'')+'>'+escapeText(ht)+' '+escapeText(sc)+' '+escapeText(at)+'</option>';
   }).join('');
   filterPlayers();
   renderByMatch();
@@ -888,12 +899,12 @@ function buildTeam(name){
 function renderTeam(){
   const name=document.getElementById('tmSel').value;
   const ms=buildTeam(name);
-  if(!ms.length){document.getElementById('tmProfile').innerHTML='<div class="empty">No matches played yet for '+name+'</div>';return;}
+  if(!ms.length){document.getElementById('tmProfile').innerHTML='<div class="empty">No matches played yet for '+escapeText(name)+'</div>';return;}
   const w=ms.filter(x=>x.gf>x.ga).length,l=ms.filter(x=>x.gf<x.ga).length,d=ms.length-w-l;
   const gf=ms.reduce((s,x)=>s+x.gf,0),ga=ms.reduce((s,x)=>s+x.ga,0);
   const axg=(ms.reduce((s,x)=>s+(x.xgf||0),0)/ms.length).toFixed(1);
   const aposs=Math.round(ms.reduce((s,x)=>s+(x.poss||0),0)/ms.length);
-  let html='<div class="pp-hero"><div><div class="pp-name">'+flag(name)+name+'</div>'+
+  let html='<div class="pp-hero"><div><div class="pp-name">'+flag(name)+escapeText(name)+'</div>'+
     '<div class="rec-pill"><span><b>'+w+'</b> W</span><span><b>'+d+'</b> D</span><span><b>'+l+'</b> L</span><span style="color:var(--muted)">&middot;</span><span><b>'+gf+'</b>:'+ga+' GD</span></div></div>'+
     '<div class="pp-totals">'+
     '<div class="pp-tot"><div class="pp-tot-n" style="color:var(--gold);text-shadow:0 0 18px var(--gold-glow)">'+axg+'</div><div class="pp-tot-l">Avg xG</div></div>'+
@@ -903,14 +914,14 @@ function renderTeam(){
     '</div></div>';
   html+='<div class="card"><div class="card-h"><div class="card-t">Match by match</div><div class="card-s">RESULT / XG / POSSESSION</div></div>'+
     '<div class="tblwrap"><table class="tbl ptbl"><thead><tr><th>Opponent</th><th>Result</th><th>Score</th><th>xG (for-against)</th><th>Poss</th></tr></thead><tbody>'+
-    ms.map(x=>{const r=x.gf>x.ga?'W':x.gf<x.ga?'L':'D';return '<tr><td><div class="pn">'+flag(x.opp)+x.opp+'</div></td><td><span class="res res-'+r+'">'+r+'</span></td><td class="num">'+x.gf+'-'+x.ga+'</td><td class="num">'+(x.xgf?x.xgf.toFixed(1):'-')+' / '+(x.xga?x.xga.toFixed(1):'-')+'</td><td class="num">'+(x.poss||'-')+'%</td></tr>';}).join('')+
+    ms.map(x=>{const r=x.gf>x.ga?'W':x.gf<x.ga?'L':'D';return '<tr><td><div class="pn">'+flag(x.opp)+escapeText(x.opp)+'</div></td><td><span class="res res-'+r+'">'+r+'</span></td><td class="num">'+x.gf+'-'+x.ga+'</td><td class="num">'+(x.xgf?Number(x.xgf).toFixed(1):'-')+' / '+(x.xga?Number(x.xga).toFixed(1):'-')+'</td><td class="num">'+(x.poss||'-')+'%</td></tr>';}).join('')+
     '</tbody></table></div></div>';
   document.getElementById('tmProfile').innerHTML=html;
 }
 function initTeams(){
   // Show all 48 real tournament teams
   const allT=Object.values(ALL_TEAMS).flat().sort();
-  document.getElementById('tmSel').innerHTML=allT.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+  document.getElementById('tmSel').innerHTML=allT.map(n=>'<option value="'+escapeText(n)+'">'+escapeText(n)+'</option>').join('');
   renderTeam();
 }
 
@@ -951,9 +962,9 @@ function renderStandings(){
   let html='';
   letters.forEach(L=>{
     const rows=Object.values(G[L]).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
-    html+='<div class="grp-card"><div class="grp-h">Group <em>'+L+'</em></div>'+
+    html+='<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
       '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-      rows.map((t,i)=>{const cls=i<2?'qual':i===2?'third':'out';const gd=t.gf-t.ga;return '<tr class="'+cls+'"><td>'+flag(t.name)+t.name+'</td><td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+t.pts+'</td></tr>';}).join('')+
+      rows.map((t,i)=>{const cls=i<2?'qual':i===2?'third':'out';const gd=t.gf-t.ga;return '<tr class="'+cls+'"><td>'+flag(t.name)+escapeText(t.name)+'</td><td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+t.pts+'</td></tr>';}).join('')+
       '</tbody></table></div>';
   });
   document.getElementById('grpGrid').innerHTML=html;
@@ -971,7 +982,7 @@ function renderThirdPlace(G){
   thirds.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
   tb.innerHTML=thirds.map((t,i)=>{
     const adv=i<8; const gd=t.gf-t.ga;
-    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name)+t.name+'</td><td>'+t.grp+'</td><td>'+t.p+'</td><td>'+(gd>0?'+':'')+gd+'</td><td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
+    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name)+escapeText(t.name)+'</td><td>'+escapeText(t.grp)+'</td><td>'+t.p+'</td><td>'+(gd>0?'+':'')+gd+'</td><td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
   }).join('');
 }
 
@@ -985,7 +996,7 @@ function renderBracket(){
     for(let i=0;i<r.n;i++){
       matches+='<div class="br-match"><div class="br-team tbd"><span>TBD</span></div><div class="br-team tbd"><span>TBD</span></div></div>';
     }
-    html+='<div class="br-round'+(ri===rounds.length-1?' br-final':'')+'"><div class="br-round-h">'+r.name+'</div>'+matches+'</div>';
+    html+='<div class="br-round'+(ri===rounds.length-1?' br-final':'')+'"><div class="br-round-h">'+escapeText(r.name)+'</div>'+matches+'</div>';
   });
   document.getElementById('bracket').innerHTML=html;
 }
@@ -995,7 +1006,7 @@ function predict(){
   const ta=document.getElementById('teamA'),tb=document.getElementById('teamB');
   const av=ta.value,bv=tb.value;
   if(ta.options.length!==allTeams.length){
-    const opts=allTeams.map(t=>'<option value="'+t+'">'+t+'</option>').join('');
+    const opts=allTeams.map(t=>'<option value="'+escapeText(t)+'">'+escapeText(t)+'</option>').join('');
     ta.innerHTML=opts;tb.innerHTML=opts;
     if(av&&allTeams.includes(av))ta.value=av;
     if(bv&&allTeams.includes(bv))tb.value=bv;
@@ -1015,15 +1026,15 @@ function predict(){
   const db=0.26*(1-Math.min(Math.abs(diff)*0.2,0.7));
   let h=Math.round(pH*(1-db)*100),d=Math.round(db*100),w=100-h-d;
   document.getElementById('pbars').innerHTML='<div class="pseg p-h" style="width:'+h+'%">'+(h>8?h+'%':'')+'</div><div class="pseg p-d" style="width:'+d+'%">'+(d>8?d+'%':'')+'</div><div class="pseg p-a" style="width:'+w+'%">'+(w>8?w+'%':'')+'</div>';
-  document.getElementById('legA').textContent=(ta.value||'Team A')+' win';
-  document.getElementById('legB').textContent=(tb.value||'Team B')+' win';
+  document.getElementById('legA').textContent=(escapeText(ta.value)||'Team A')+' win';
+  document.getElementById('legB').textContent=(escapeText(tb.value)||'Team B')+' win';
 }
 function heatmap(){
   const M=['xG','Poss','Shots','PPDA','Goals'],C=[[1,0.55,0.74,-0.48,0.78],[0.55,1,0.62,-0.71,0.42],[0.74,0.62,1,-0.44,0.61],[-0.48,-0.71,-0.44,1,-0.39],[0.78,0.42,0.61,-0.39,1]];
   const col=v=>v>=0?'rgba(255,193,48,'+v+')':'rgba(255,59,92,'+(-v)+')';
   let h='<div class="hm" style="grid-template-columns:48px repeat(5,1fr)"><div class="hml"></div>';
-  M.forEach(m=>h+='<div class="hml">'+m+'</div>');
-  C.forEach((r,i)=>{h+='<div class="hml">'+M[i]+'</div>';r.forEach(v=>h+='<div class="hmc" style="background:'+col(v)+';color:'+(Math.abs(v)>0.5?'#06121e':'#EEF1F8')+'">'+v.toFixed(2)+'</div>');});
+  M.forEach(m=>h+='<div class="hml">'+escapeText(m)+'</div>');
+  C.forEach((r,i)=>{h+='<div class="hml">'+escapeText(M[i])+'</div>';r.forEach(v=>h+='<div class="hmc" style="background:'+col(v)+';color:'+(Math.abs(v)>0.5?'#06121e':'#EEF1F8')+'">'+Number(v).toFixed(2)+'</div>');});
   document.getElementById('heat').innerHTML=h+'</div>';
 }
 let CH={};
@@ -1039,7 +1050,7 @@ function labCharts(){
   const t=Object.values(teamAgg).map(x=>({name:x.name,goals:x.g,xg:x.n?x.xg/x.n:0,possession:x.n?x.pos/x.n:50,ppda:10})).filter(x=>x.n||x.goals>=0);
   if(!t.length)return;
   Object.values(CH).forEach(c=>c&&c.destroy());
-  CH.xg=new Chart(document.getElementById('xgChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:parseFloat(x.xg.toFixed(2)),y:x.goals,label:x.name})),backgroundColor:'#FFC130',pointRadius:7,pointHoverRadius:9},{type:'line',data:[{x:0,y:0},{x:4,y:4}],borderColor:'rgba(255,255,255,0.15)',borderDash:[5,5],pointRadius:0,borderWidth:1}]},options:Object.assign(co('xG per game (Expected Goals)','Actual Goals'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label?c.raw.label+': '+c.raw.y+'G from '+c.raw.x+'xG':''}}}})});
+  CH.xg=new Chart(document.getElementById('xgChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:parseFloat(Number(x.xg).toFixed(2)),y:x.goals,label:x.name})),backgroundColor:'#FFC130',pointRadius:7,pointHoverRadius:9},{type:'line',data:[{x:0,y:0},{x:4,y:4}],borderColor:'rgba(255,255,255,0.15)',borderDash:[5,5],pointRadius:0,borderWidth:1}]},options:Object.assign(co('xG per game (Expected Goals)','Actual Goals'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label?c.raw.label+': '+c.raw.y+'G from '+c.raw.x+'xG':''}}}})});
   CH.style=new Chart(document.getElementById('styleChart'),{type:'scatter',data:{datasets:[{data:t.map(x=>({x:x.possession,y:x.ppda,label:x.name})),backgroundColor:t.map(x=>x.possession>55?'#38A8FF':'#FF3B5C'),pointRadius:7,pointHoverRadius:9}]},options:Object.assign(co('Possession %','PPDA (↓ = high press)'),{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.label+': '+c.raw.x+'% poss'}}}})});
   const bk={'<7':0,'7-8':0,'8-9':0,'9-10':0,'10-11':0,'11+':0};D.ppi.forEach(p=>{const v=p.overall_ppi;if(v<7)bk['<7']++;else if(v<8)bk['7-8']++;else if(v<9)bk['8-9']++;else if(v<10)bk['9-10']++;else if(v<11)bk['10-11']++;else bk['11+']++;});
   CH.dist=new Chart(document.getElementById('distChart'),{type:'bar',data:{labels:Object.keys(bk),datasets:[{data:Object.values(bk),backgroundColor:'#FFC130',borderRadius:6}]},options:co('PPI score range','Number of players')});
@@ -1051,21 +1062,21 @@ function renderAwards(){
   // Golden Boot — goals, then assists, then fewer minutes
   const boot=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
   const bb=document.getElementById('awBoot');
-  bb.innerHTML=boot.length?boot.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td><span class="aw-g">'+p.total_goals+'</span></td><td>'+p.total_assists+'</td><td>'+(p.matches_played*90)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No goals yet</div></td></tr>';
+  bb.innerHTML=boot.length?boot.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td><span class="aw-g">'+p.total_goals+'</span></td><td>'+p.total_assists+'</td><td>'+(p.matches_played*90)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No goals yet</div></td></tr>';
 
   // Golden Ball — best player by PPI
   const ball=D.ppi.slice().sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
-  document.getElementById('awBall').innerHTML=ball.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td><span class="pos pos-'+p.position+'">'+p.position+'</span></td><td><span class="aw-s">'+p.overall_ppi.toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join('');
+  document.getElementById('awBall').innerHTML=ball.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td><span class="pos pos-'+escapeText(p.position)+'">'+escapeText(p.position)+'</span></td><td><span class="aw-s">'+Number(p.overall_ppi||0).toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join('');
 
   // Golden Glove — composite of save%, saves, clean sheets, ppi
   const ks=(typeof KEEPERS!=='undefined'?KEEPERS:DEMO_KEEPERS).slice();
   ks.forEach(k=>{k.score=(k.save_pct/100*3)+(k.saves*0.25)+(k.clean_sheets*2)+(k.ppi*0.3);});
   ks.sort((a,b)=>b.score-a.score);
-  document.getElementById('awGlove').innerHTML=ks.slice(0,6).map((k,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(k.team)+k.name+'</td><td>'+k.saves+'</td><td>'+k.save_pct+'%</td><td>'+k.clean_sheets+'</td><td><span class="aw-s">'+k.score.toFixed(1)+'</span></td></tr>').join('');
+  document.getElementById('awGlove').innerHTML=ks.slice(0,6).map((k,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(k.team)+escapeText(k.name)+'</td><td>'+k.saves+'</td><td>'+k.save_pct+'%</td><td>'+k.clean_sheets+'</td><td><span class="aw-s">'+Number(k.score||0).toFixed(1)+'</span></td></tr>').join('');
 
   // Young Player — under 21, by PPI
   const young=D.ppi.filter(p=>p.age&&p.age<=21).sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
-  document.getElementById('awYoung').innerHTML=young.length?young.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+p.name+'</td><td>'+p.age+'</td><td><span class="aw-s">'+p.overall_ppi.toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No U-21 data yet</div></td></tr>';
+  document.getElementById('awYoung').innerHTML=young.length?young.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td>'+p.age+'</td><td><span class="aw-s">'+Number(p.overall_ppi||0).toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No U-21 data yet</div></td></tr>';
 }
 
 async function load(){
@@ -1183,7 +1194,7 @@ async function load(){
   const sc=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
   document.getElementById('scorers').innerHTML=scorers(sc);
   renderSpotlight();renderNextMatch();computeStorylines();
-  document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+x.home_team+' '+(x.home_score??'?')+'-'+(x.away_score??'?')+' '+x.away_team+'</option>').join('');
+  document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+escapeText(x.home_team)+' '+(x.home_score??'?')+'-'+(x.away_score??'?')+' '+escapeText(x.away_team)+'</option>').join('');
   genContent();predict();
   initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
 }
