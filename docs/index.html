@@ -317,7 +317,7 @@
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="tab active" onclick="tab('overview',this)">Overview</button>
+    <button class="tab" onclick="tab('overview',this)">Overview</button>
     <button class="tab" onclick="tab('standings',this)">Standings</button>
     <button class="tab" onclick="tab('bracket',this)">Bracket</button>
     <button class="tab" onclick="tab('awards',this)">Awards</button>
@@ -355,7 +355,7 @@
 
 <main class="main">
 
-  <div class="pane active" id="p-overview">
+  <div class="pane" id="p-overview">
     <div class="sec-head">Results by matchday</div>
     <div class="ctrl"><select class="sel" id="dateSel" onchange="renderDays()"></select></div>
     <div id="matchDays"></div>
@@ -608,7 +608,7 @@ const DEMO_TEAMS=[
 ];
 let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
 
-// All 48 real WC2026 teams with correct groups — used for empty standings when no real data
+// All 48 real WC2026 teams with correct groups
 const ALL_TEAMS={
   A:['Mexico','South Africa','South Korea','Czechia'],
   B:['Canada','Switzerland','Qatar','Bosnia and Herzegovina'],
@@ -653,7 +653,7 @@ const FULL_SCHEDULE=[
 const DEMO_UPCOMING=FULL_SCHEDULE;
 let UPCOMING=DEMO_UPCOMING;
 
-// player-match-stats demo (m = index into matches)
+// player-match-stats demo
 const DEMO_PMS=[
   {m:4,name:'Vinicius Jr.',team:'Brazil',pos:'F',min:90,rating:8.7,g:1,a:2,sot:4,kp:5,drb:8,dw:6,dt:11,ppi:8.3,ovr:10.9},
   {m:4,name:'Raphinha',team:'Brazil',pos:'F',min:90,rating:8.2,g:2,a:0,sot:4,kp:2,drb:3,dw:4,dt:7,ppi:8.0,ovr:10.5},
@@ -682,14 +682,31 @@ let KEEPERS=DEMO_KEEPERS;
 const TEAM_GROUP={};
 Object.entries(ALL_TEAMS).forEach(([L,teams])=>teams.forEach(t=>TEAM_GROUP[t]=L));
 function getGroup(m){
-  return m.grp||m.group_name||m.group||TEAM_GROUP[m.home_team]||TEAM_GROUP[m.away_team]||null;
+  let rawGroup = m.grp||m.group_name||m.group||TEAM_GROUP[m.home_team]||TEAM_GROUP[m.away_team]||'?';
+  return String(rawGroup).replace(/Group\s+/i, '').trim();
 }
+
 function countdown(){
   const diff=new Date('2026-06-11T20:00:00Z')-new Date();
   if(diff<=0){document.getElementById('livePill').classList.add('is-live');document.getElementById('liveTxt').textContent='LIVE';}
 }
 async function sb(t,p){try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?'+p,{headers});if(!r.ok)return null;return await r.json();}catch{return null;}}
-function tab(n,b){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tabs .tab').forEach(t=>t.classList.remove('active'));document.getElementById('p-'+n).classList.add('active');b.classList.add('active');if(n==='lab')setTimeout(()=>{labCharts();heatmap();},40);}
+
+// UPDATED TAB FUNCTION: Remembers your tab across reloads
+function tab(n,b){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tabs .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p-'+n).classList.add('active');
+  if(b) {
+    b.classList.add('active');
+  } else {
+    const btn = document.querySelector(`.nav-tabs .tab[onclick*="${n}"]`);
+    if(btn) btn.classList.add('active');
+  }
+  localStorage.setItem('wc2026_tab', n); // Saves tab state to browser memory
+  if(n==='lab') setTimeout(()=>{labCharts();heatmap();},40);
+}
+
 function mCard(m,demo){
   const hw=m.home_score>m.away_score,aw=m.away_score>m.home_score,hp=m.home_possession||50,ap=m.away_possession||50;
   return '<div class="match"><div class="match-meta">'+escapeText(m.round||'Group')+(demo?' / sample':'')+'</div>'+
@@ -792,36 +809,29 @@ function genContent(){
   const score=m.home_score+'-'+m.away_score;
   const a=[];
 
-  // 1. Hook post
   a.push({t:'hook',l:'🔥 Hook / Opening',
     x:(tg>=4?tg+' GOALS. ':'')+(winner?winner+' WIN. ':'')+m.home_team+' '+score+' '+m.away_team+'.\n\nHere\'s what the data says actually happened 👇\n\n#WorldCup2026 #WC2026 #Football'});
 
-  // 2. xG story
   if(m.home_xg&&m.away_xg){
     const xgH=Number(m.home_xg).toFixed(1),xgA=Number(m.away_xg).toFixed(1);
     a.push({t:'xg',l:'📊 xG Story',
       x:m.home_team+' '+score+' '+m.away_team+'\n\nThe scoreline lied.\n\nxG: '+m.home_team+' '+xgH+' vs '+m.away_team+' '+xgA+'\n\n'+unlucky+' were actually the better team by the numbers.\n\nExpected goals strips away luck and shows who created the real danger.\n\n#WC2026Analytics'});
   }
 
-  // 3. Tactical breakdown
   a.push({t:'tac',l:'🎯 Tactical Angle',
     x:m.home_team+' '+score+' '+m.away_team+' | Tactical Breakdown\n\n'+'Possession: '+m.home_team+' '+m.home_possession+'% vs '+m.away_team+' '+m.away_possession+'%\n'+'Shots: '+(m.home_shots||'—')+' vs '+(m.away_shots||'—')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1)+'\n':'')+'\n'+(domPoss>=60?dom+' controlled the tempo but did it translate into the result?':winner?winner+' won it without controlling possession — efficiency over dominance.':'Both sides cancelled each other out in a closely-contested tactical battle.')+'\n\n#WC2026 #Tactics'});
 
-  // 4. Player spotlight (MOM)
   if(mom){
     a.push({t:'hook',l:'⭐ Player Spotlight (MOM)',
       x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+Number(mom.ovr||0).toFixed(1)+' | Goals: '+mom.g+' | Assists: '+mom.a+'\nKey passes: '+mom.kp+' | Dribbles: '+mom.drb+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+mom.name.replace(/[^a-zA-Z]/g,'')+' #'+mom.team.replace(/ /g,'')});
   }
 
-  // 5. Instagram carousel structure
   a.push({t:'tac',l:'📱 IG Carousel Structure',
     x:'SLIDE 1 — Hook\n"'+m.home_team+' '+score+' '+m.away_team+' — The data breakdown"\n\nSLIDE 2 — Key Stats\nPossession: '+m.home_possession+'% vs '+m.away_possession+'%\nShots: '+(m.home_shots||'?')+' vs '+(m.away_shots||'?')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1):'')+'\n\nSLIDE 3 — Best Player\n'+( mom?mom.name+' — PPI '+Number(mom.ovr||0).toFixed(1):'See our full player ratings')+'\n\nSLIDE 4 — xG Story\nWho really deserved to win?\n\nSLIDE 5 — CTA\n"Full analytics at [your link in bio]"'});
 
-  // 6. TikTok / Reels script
   a.push({t:'xg',l:'🎬 TikTok / Reels Script',
     x:'[Hook — 0-2s]\n"'+m.home_team+' '+score+' '+m.away_team+' — but was it fair?"\n\n[Data reveal — 2-8s]\n"The xG was '+(m.home_xg?Number(m.home_xg).toFixed(1)+' to '+Number(m.away_xg).toFixed(1):'actually closer than the score')+'. '+unlucky+' created more danger but couldn\'t convert."\n\n[Player focus — 8-15s]\n'+(mom?'"'+mom.name+' was the standout. PPI '+Number(mom.ovr||0).toFixed(1)+', '+(mom.g+mom.a)+' goal contributions, ran the show."':'"Check the full player ratings in the link."')+'\n\n[CTA — 15-20s]\n"Full breakdown on the dashboard — link in bio. Follow for every match."'});
 
-  // 7. Twitter/X thread starter
   a.push({t:'hook',l:'🐦 Twitter/X Thread',
     x:'🧵 '+m.home_team+' '+score+' '+m.away_team+' — full data breakdown:\n\n1/ Scoreline: '+m.home_team+' '+score+' '+m.away_team+(m.home_xg?' (xG: '+Number(m.home_xg).toFixed(1)+' - '+Number(m.away_xg).toFixed(1)+')':'')+'\n\n2/ Possession: '+m.home_team+' '+m.home_possession+'% dominated the ball'+(domPoss>=60?'. '+m.away_team+' were content to defend and counter.':'. A fairly even split.')+'\n\n3/ '+(mom?'MOM: '+mom.name+' (PPI '+Number(mom.ovr||0).toFixed(1)+'). '+mom.g+'G/'+mom.a+'A':'Player ratings: full breakdown on the dashboard')+'\n\n4/ Full player stats, xG model and tactical breakdown → [link]\n\n#WC2026 #WorldCup'});
 
@@ -877,7 +887,6 @@ function filterPlayers(){
 function initPlayers(){
   const matchesWithData=[...new Set(PMS.map(p=>p.m))].sort((a,b)=>a-b);
   const defaultM=matchesWithData.length>0?matchesWithData[0]:0;
-  // Use real match data if available, otherwise use schedule
   const mList=D.isDemo?FULL_SCHEDULE.filter(x=>new Date(x.date)<new Date()).map(x=>({home_team:x.home,away_team:x.away,home_score:'?',away_score:'?'})):D.matches;
   document.getElementById('pmMatchSel').innerHTML=mList.map((m,i)=>{
     const ht=m.home_team||m.home,at=m.away_team||m.away;
@@ -919,16 +928,14 @@ function renderTeam(){
   document.getElementById('tmProfile').innerHTML=html;
 }
 function initTeams(){
-  // Show all 48 real tournament teams
   const allT=Object.values(ALL_TEAMS).flat().sort();
   document.getElementById('tmSel').innerHTML=allT.map(n=>'<option value="'+escapeText(n)+'">'+escapeText(n)+'</option>').join('');
   renderTeam();
 }
 
+// UPDATED STANDINGS LOGIC: Safely maps groups, removes "Group" keyword, prevents NaN crashing
 function computeStandings() {
   const G = {};
-  
-  // 1. Pre-fill all 48 teams so the object structure is always guaranteed
   Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
     G[L] = {};
     teams.forEach(n => {
@@ -938,31 +945,25 @@ function computeStandings() {
 
   if (D.isDemo) return G;
 
-  // 2. Process real match data with strict null checks
   D.matches.forEach(m => {
     if (!m || !m.home_team || !m.away_team) return;
-    
-    const g = m.grp || m.group_name || m.group || TEAM_GROUP[m.home_team] || TEAM_GROUP[m.away_team];
-    if (!g || !G[g]) return;
+    const g = getGroup(m);
+    if (!G[g]) G[g] = {};
 
     const ht = m.home_team;
     const at = m.away_team;
     
-    // Fallback in case a team name is somehow missing from the pre-fill
     if (!G[g][ht]) G[g][ht] = { name: ht, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
     if (!G[g][at]) G[g][at] = { name: at, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
 
     const hs = parseInt(m.home_score);
     const as = parseInt(m.away_score);
 
-    // 3. ONLY calculate points if both scores are valid numbers (prevents NaN crashes)
+    // Only add points if the score isn't null/NaN
     if (!isNaN(hs) && !isNaN(as)) {
-      G[g][ht].p++; 
-      G[g][at].p++;
-      G[g][ht].gf += hs; 
-      G[g][ht].ga += as;
-      G[g][at].gf += as; 
-      G[g][at].ga += hs;
+      G[g][ht].p++; G[g][at].p++;
+      G[g][ht].gf += hs; G[g][ht].ga += as;
+      G[g][at].gf += as; G[g][at].ga += hs;
 
       if (hs > as) { G[g][ht].w++; G[g][ht].pts += 3; G[g][at].l++; }
       else if (hs < as) { G[g][at].w++; G[g][at].pts += 3; G[g][ht].l++; }
@@ -975,15 +976,15 @@ function computeStandings() {
 function renderStandings() {
   const el = document.getElementById('grpGrid');
   if (!el) return;
-  
   try {
     const G = computeStandings();
+    const letters = Object.keys(G).sort();
+    if (!letters.length) {
+      el.innerHTML = '<div class="empty">Standings appear once matches are played</div>';
+      return;
+    }
     let html = '';
-    
-    // Sort groups A -> L
-    Object.keys(G).sort().forEach(L => {
-      
-      // Safe tie-breaker sorting: Points -> Goal Difference -> Goals Scored
+    letters.forEach(L => {
       const rows = Object.values(G[L]).sort((a, b) => {
         if (b.pts !== a.pts) return b.pts - a.pts;
         const gdA = a.gf - a.ga;
@@ -991,32 +992,22 @@ function renderStandings() {
         if (gdB !== gdA) return gdB - gdA;
         return b.gf - a.gf;
       });
-
-      html += `
-        <div class="grp-card">
-          <div class="grp-h">Group <em>${escapeText(L)}</em></div>
-          <table class="stbl">
-            <thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
-            <tbody>
-              ${rows.map((t, i) => {
-                const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
-                const gd = t.gf - t.ga;
-                const gdStr = gd > 0 ? '+' + gd : gd;
-                return `<tr class="${cls}">
-                  <td>${flag(t.name) || ''}${escapeText(t.name)}</td>
-                  <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
-                  <td>${gdStr}</td><td class="pts">${t.pts}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
+      
+      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
+        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+        rows.map((t, i) => {
+          const cls = i < 2 ? 'qual' : i === 2 ? 'third' : 'out';
+          const gd = t.gf - t.ga;
+          const gdStr = gd > 0 ? '+' + gd : gd;
+          return '<tr class="'+cls+'"><td>'+flag(t.name)+escapeText(t.name)+'</td>'+
+                 '<td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td>'+
+                 '<td>'+gdStr+'</td><td class="pts">'+t.pts+'</td></tr>';
+        }).join('') + '</tbody></table></div>';
     });
-    
-    el.innerHTML = html || '<div class="empty">No standings data available</div>';
+    el.innerHTML = html;
     renderThirdPlace(G);
   } catch (err) {
-    el.innerHTML = `<div class="empty">Error loading standings. Check console.</div>`;
+    el.innerHTML = '<div class="empty">Error calculating standings</div>';
     console.error("Standings Error:", err);
   }
 }
@@ -1024,7 +1015,6 @@ function renderStandings() {
 function renderThirdPlace(G) {
   const tb = document.getElementById('thirdBody');
   if (!tb) return;
-  
   try {
     const thirds = [];
     Object.keys(G).forEach(L => {
@@ -1035,8 +1025,8 @@ function renderThirdPlace(G) {
         if (gdB !== gdA) return gdB - gdA;
         return b.gf - a.gf;
       });
-      // Only push teams that have actually played a game
-      if (rows.length >= 3 && rows[2].p > 0) {
+      // Safety check: Make sure rows[2] actually exists and has played
+      if (rows.length >= 3 && rows[2] && rows[2].p > 0) {
         thirds.push({ ...rows[2], grp: L });
       }
     });
@@ -1046,7 +1036,6 @@ function renderThirdPlace(G) {
       return;
     }
 
-    // Sort the pool of 3rd place teams
     thirds.sort((a, b) => {
       if (b.pts !== a.pts) return b.pts - a.pts;
       const gdA = a.gf - a.ga;
@@ -1056,14 +1045,12 @@ function renderThirdPlace(G) {
     });
 
     tb.innerHTML = thirds.map((t, i) => {
-      const adv = i < 8; // Top 8 3rd place teams advance
+      const adv = i < 8; 
       const gd = t.gf - t.ga;
       const gdStr = gd > 0 ? '+' + gd : gd;
-      return `<tr class="${adv ? 'qual' : 'out'}">
-        <td>${flag(t.name) || ''}${escapeText(t.name)}</td>
-        <td>${escapeText(t.grp)}</td><td>${t.p}</td><td>${gdStr}</td>
-        <td>${t.gf}</td><td class="pts">${t.pts}</td>
-      </tr>`;
+      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name)+escapeText(t.name)+'</td>'+
+             '<td>'+escapeText(t.grp)+'</td><td>'+t.p+'</td><td>'+gdStr+'</td>'+
+             '<td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
     }).join('');
   } catch (err) {
     console.error("Third Place Error:", err);
@@ -1143,22 +1130,18 @@ function labCharts(){
 }
 
 function renderAwards(){
-  // Golden Boot — goals, then assists, then fewer minutes
   const boot=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
   const bb=document.getElementById('awBoot');
   bb.innerHTML=boot.length?boot.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td><span class="aw-g">'+p.total_goals+'</span></td><td>'+p.total_assists+'</td><td>'+(p.matches_played*90)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No goals yet</div></td></tr>';
 
-  // Golden Ball — best player by PPI
   const ball=D.ppi.slice().sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
   document.getElementById('awBall').innerHTML=ball.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td><span class="pos pos-'+escapeText(p.position)+'">'+escapeText(p.position)+'</span></td><td><span class="aw-s">'+Number(p.overall_ppi||0).toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join('');
 
-  // Golden Glove — composite of save%, saves, clean sheets, ppi
   const ks=(typeof KEEPERS!=='undefined'?KEEPERS:DEMO_KEEPERS).slice();
   ks.forEach(k=>{k.score=(k.save_pct/100*3)+(k.saves*0.25)+(k.clean_sheets*2)+(k.ppi*0.3);});
   ks.sort((a,b)=>b.score-a.score);
   document.getElementById('awGlove').innerHTML=ks.slice(0,6).map((k,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(k.team)+escapeText(k.name)+'</td><td>'+k.saves+'</td><td>'+k.save_pct+'%</td><td>'+k.clean_sheets+'</td><td><span class="aw-s">'+Number(k.score||0).toFixed(1)+'</span></td></tr>').join('');
 
-  // Young Player — under 21, by PPI
   const young=D.ppi.filter(p=>p.age&&p.age<=21).sort((a,b)=>b.overall_ppi-a.overall_ppi).slice(0,6);
   document.getElementById('awYoung').innerHTML=young.length?young.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+flag(p.team)+escapeText(p.name)+'</td><td>'+p.age+'</td><td><span class="aw-s">'+Number(p.overall_ppi||0).toFixed(1)+'</span></td><td>'+(p.total_goals+p.total_assists)+'</td></tr>').join(''):'<tr><td colspan="5"><div class="empty">No U-21 data yet</div></td></tr>';
 }
@@ -1166,14 +1149,12 @@ function renderAwards(){
 async function load(){
   countdown();
 
-  // Fetch all live data in parallel - use select=* to avoid column name issues
   const [m, pd, pms] = await Promise.all([
     sb('matches','select=*&limit=200'),
     sb('tournament_leaderboard','select=*&order=avg_overall_ppi.desc&limit=100'),
     sb('player_match_stats','select=*&limit=1000')
   ]);
 
-  // Use live data if available
   if(m&&m.length>0){
     D.isDemo=false;
     D.matches=m.map(x=>({
@@ -1192,7 +1173,7 @@ async function load(){
   }
 
   if(pd&&pd.length>0){
-    D.isDemo=false; // we have real PPI data even if matches query failed
+    D.isDemo=false;
     D.ppi=pd.map(p=>({
       name:p.name||p.player_name,
       team:p.team,
@@ -1203,20 +1184,16 @@ async function load(){
       matches_played:parseInt(p.matches_played||1),
       age:p.age||null
     }));
-    // Show LIVE badge if we have any real data
     document.getElementById('livePill').classList.add('is-live');
     document.getElementById('liveTxt').textContent='LIVE DATA';
   }
 
-  // Build PMS from real player_match_stats
   if(pms&&pms.length>0){
-    // Build match index map - try multiple possible id field names
     const midMap={};
     D.matches.forEach((match,idx)=>{
       const id=match.match_id||match.id||match.fixture_id;
       if(id)midMap[String(id)]=idx;
     });
-    // If no matches, try to reconstruct match list from player stats
     if(D.matches===DEMO_MATCHES&&pms.length>0){
       const matchGroups={};
       pms.forEach(p=>{
@@ -1247,7 +1224,6 @@ async function load(){
       ovr:parseFloat(p.overall_ppi||p.ppi_score||0)
     })).filter(p=>p.m>=0);
 
-    // Build keeper stats from player stats
     const kmap={};
     pms.filter(p=>{const pos=(p.position||'').toUpperCase();return pos==='G'||pos==='GK'||pos==='Goalkeeper'}).forEach(p=>{
       const n=p.player_name||p.name;
@@ -1265,7 +1241,6 @@ async function load(){
     }
   }
 
-  // Hero stats — show real numbers if we have them
   const realMatches=D.isDemo?0:D.matches.filter(x=>x.home_score!==undefined&&x.home_score!==null).length;
   const goals=D.isDemo?0:D.matches.reduce((s,x)=>s+(parseInt(x.home_score)||0)+(parseInt(x.away_score)||0),0);
   document.getElementById('hMatches').textContent=realMatches||'--';
@@ -1282,6 +1257,14 @@ async function load(){
   genContent();predict();
   initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
 }
+
+// RESTORES THE LAST VIEWED TAB
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTab = localStorage.getItem('wc2026_tab') || 'overview';
+  // Give the UI a tiny delay to ensure everything is rendered before switching
+  setTimeout(() => tab(savedTab, null), 50);
+});
+
 load();
 </script>
 </body>
