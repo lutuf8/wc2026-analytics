@@ -185,12 +185,24 @@ def update_standings():
     standings_arrays = data[0].get('league', {}).get('standings', [])
     unique_teams = {}
     
-    # Use a dictionary keyed by team_id to automatically remove duplicates
+    # Valid World Cup Groups
+    valid_groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+    
     for grp in standings_arrays:
         for t in grp:
-            team_id = t['team']['id']
-            g_name = str(t.get('group', '')).replace('Group', '').strip()
+            raw_group = str(t.get('group', ''))
             
+            # CRITICAL FIX: Completely ignore the glitched "Group Stage" array
+            if raw_group == "Group Stage" or raw_group == "Stage":
+                continue
+                
+            g_name = raw_group.replace('Group', '').strip()
+            
+            # Double check it is a valid single-letter group
+            if g_name not in valid_groups:
+                continue
+
+            team_id = t['team']['id']
             unique_teams[team_id] = {
                 'team_id': team_id,
                 'team_name': t['team']['name'],
@@ -206,12 +218,10 @@ def update_standings():
                 'goals_against': t['all']['goals'].get('against', 0)
             }
             
-    # Convert back to list for bulk upsert
     rows = list(unique_teams.values())
     if rows:
         supabase.table('standings').upsert(rows).execute()
         print(f"  ✓ Standings synced directly from API ({len(rows)} unique teams)")
-
 # ── MAIN ─────────────────────────────────────────────────────────────────────
 
 def run():
