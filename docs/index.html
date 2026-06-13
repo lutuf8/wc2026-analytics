@@ -524,9 +524,9 @@
 <footer class="foot"><span>World Cup 2026 Analytics &nbsp;&middot;&nbsp; by <em>Lutuf Abdulla</em></span></footer>
 
 <script>
-// UI Protection Utility (Prevents layout breaks and simple XSS)
+// UI Protection Utility (Patched to handle 0 correctly)
 const escapeText = (str) => {
-  if (!str) return '';
+  if (str === null || str === undefined) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -926,64 +926,132 @@ function initTeams(){
 }
 
 function computeStandings(){
-  // If no real match data, return all 48 teams with 0 stats — never fake results
+  const G={};
   if(D.isDemo){
-    const G={};
     Object.entries(ALL_TEAMS).forEach(([L,teams])=>{
       G[L]={};
       teams.forEach(n=>G[L][n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
     });
     return G;
   }
-  // Real match data — compute from actual results
-  const G={};
+  
+  // Real match data — compute from actual results safely
   D.matches.forEach(m=>{
-    const g=getGroup(m);if(!g)return;
-    G[g]=G[g]||{};
-    const T=n=>G[g][n]=G[g][n]||{name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
-    const h=T(m.home_team),a=T(m.away_team);
-    const hs=parseInt(m.home_score)||0,as=parseInt(m.away_score)||0;
-    h.p++;a.p++;h.gf+=hs;h.ga+=as;a.gf+=as;a.ga+=hs;
-    if(hs>as){h.w++;h.pts+=3;a.l++;}
-    else if(hs<as){a.w++;a.pts+=3;h.l++;}
-    else{h.d++;a.d++;h.pts++;a.pts++;}
+    if(!m) return;
+    const g = (m.grp || m.group_name || m.group || TEAM_GROUP[m.home_team] || TEAM_GROUP[m.away_team] || '?');
+    if(!G[g]) G[g] = {};
+    
+    const ht = m.home_team || 'Unknown Home';
+    const at = m.away_team || 'Unknown Away';
+    
+    if(!G[g][ht]) G[g][ht] = {name:ht, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
+    if(!G[g][at]) G[g][at] = {name:at, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
+    
+    const h = G[g][ht];
+    const a = G[g][at];
+    
+    const hs = parseInt(m.home_score) || 0;
+    const as = parseInt(m.away_score) || 0;
+    
+    h.p++; a.p++;
+    h.gf += hs; h.ga += as;
+    a.gf += as; a.ga += hs;
+    
+    if(hs > as) { h.w++; h.pts += 3; a.l++; }
+    else if(hs < as) { a.w++; a.pts += 3; h.l++; }
+    else { h.d++; a.d++; h.pts++; a.pts++; }
   });
-  // Fill in any missing teams from ALL_TEAMS so every group always shows all 4 teams
+
+  // Fill in any missing teams from ALL_TEAMS to guarantee 4 teams per group
   Object.entries(ALL_TEAMS).forEach(([L,teams])=>{
-    G[L]=G[L]||{};
-    teams.forEach(n=>{G[L][n]=G[L][n]||{name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};});
+    if(!G[L]) G[L] = {};
+    teams.forEach(n=>{
+      if(!G[L][n]) G[L][n] = {name:n, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
+    });
   });
   return G;
 }
+
 function renderStandings(){
-  const G=computeStandings();
-  const letters=Object.keys(G).sort();
-  if(!letters.length){document.getElementById('grpGrid').innerHTML='<div class="empty">Standings appear once matches are played</div>';return;}
-  let html='';
-  letters.forEach(L=>{
-    const rows=Object.values(G[L]).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
-    html+='<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-      '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-      rows.map((t,i)=>{const cls=i<2?'qual':i===2?'third':'out';const gd=t.gf-t.ga;return '<tr class="'+cls+'"><td>'+flag(t.name)+escapeText(t.name)+'</td><td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+t.pts+'</td></tr>';}).join('')+
-      '</tbody></table></div>';
-  });
-  document.getElementById('grpGrid').innerHTML=html;
-  renderThirdPlace(G);
+  try {
+    const el = document.getElementById('grpGrid');
+    if(!el) return;
+    const G = computeStandings();
+    const letters = Object.keys(G).sort();
+    if(!letters.length){
+      el.innerHTML = '<div class="empty">Standings appear once matches are played</div>';
+      return;
+    }
+    let html = '';
+    letters.forEach(L => {
+      // Bulletproof sorting that prevents NaN crashes
+      const rows = Object.values(G[L]).sort((a,b) => {
+        const ptsDiff = (b.pts||0) - (a.pts||0);
+        if(ptsDiff !== 0) return ptsDiff;
+        const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
+        if(gdDiff !== 0) return gdDiff;
+        return (b.gf||0) - (a.gf||0);
+      });
+      
+      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
+        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
+        rows.map((t,i)=>{
+          const cls = i<2 ? 'qual' : i===2 ? 'third' : 'out';
+          const gd = (t.gf||0) - (t.ga||0);
+          const gdStr = gd > 0 ? '+'+gd : gd;
+          return '<tr class="'+cls+'"><td>'+flag(t.name||'')+escapeText(t.name||'Unknown')+'</td>'+
+                 '<td>'+(t.p||0)+'</td><td>'+(t.w||0)+'</td><td>'+(t.d||0)+'</td><td>'+(t.l||0)+'</td>'+
+                 '<td>'+gdStr+'</td><td class="pts">'+(t.pts||0)+'</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    });
+    el.innerHTML = html;
+    renderThirdPlace(G);
+  } catch(e) {
+    console.error("Standings Render Error:", e);
+    document.getElementById('grpGrid').innerHTML = '<div class="empty">Error calculating standings.</div>';
+  }
 }
+
 function renderThirdPlace(G){
-  const tb=document.getElementById('thirdBody');
-  if(!tb)return;
-  const thirds=[];
-  Object.keys(G).forEach(L=>{
-    const rows=Object.values(G[L]).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
-    if(rows.length>=3 && rows[2].p>0) thirds.push({...rows[2],grp:L});
-  });
-  if(!thirds.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">Third-place ranking appears once group matches are played</div></td></tr>';return;}
-  thirds.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
-  tb.innerHTML=thirds.map((t,i)=>{
-    const adv=i<8; const gd=t.gf-t.ga;
-    return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name)+escapeText(t.name)+'</td><td>'+escapeText(t.grp)+'</td><td>'+t.p+'</td><td>'+(gd>0?'+':'')+gd+'</td><td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';
-  }).join('');
+  try {
+    const tb = document.getElementById('thirdBody');
+    if(!tb) return;
+    const thirds=[];
+    Object.keys(G).forEach(L=>{
+      const rows=Object.values(G[L]).sort((a,b) => {
+        const ptsDiff = (b.pts||0) - (a.pts||0);
+        if(ptsDiff !== 0) return ptsDiff;
+        const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
+        if(gdDiff !== 0) return gdDiff;
+        return (b.gf||0) - (a.gf||0);
+      });
+      if(rows.length>=3 && (rows[2].p||0)>0) thirds.push({...rows[2],grp:L});
+    });
+    
+    if(!thirds.length){
+      tb.innerHTML='<tr><td colspan="6"><div class="empty">Third-place ranking appears once group matches are played</div></td></tr>';
+      return;
+    }
+    
+    thirds.sort((a,b) => {
+      const ptsDiff = (b.pts||0) - (a.pts||0);
+      if(ptsDiff !== 0) return ptsDiff;
+      const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
+      if(gdDiff !== 0) return gdDiff;
+      return (b.gf||0) - (a.gf||0);
+    });
+    
+    tb.innerHTML=thirds.map((t,i)=>{
+      const adv = i<8; 
+      const gf = t.gf||0; const ga = t.ga||0;
+      const gd = gf-ga;
+      const gdStr = gd > 0 ? '+'+gd : gd;
+      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name||'')+escapeText(t.name||'Unknown')+'</td>'+
+             '<td>'+escapeText(t.grp)+'</td><td>'+(t.p||0)+'</td><td>'+gdStr+'</td><td>'+gf+'</td><td class="pts">'+(t.pts||0)+'</td></tr>';
+    }).join('');
+  } catch(e) {
+    console.error("Third Place Render Error:", e);
+  }
 }
 
 function renderBracket(){
