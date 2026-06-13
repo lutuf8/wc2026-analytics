@@ -925,132 +925,148 @@ function initTeams(){
   renderTeam();
 }
 
-function computeStandings(){
-  const G={};
-  if(D.isDemo){
-    Object.entries(ALL_TEAMS).forEach(([L,teams])=>{
-      G[L]={};
-      teams.forEach(n=>G[L][n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
-    });
-    return G;
-  }
+function computeStandings() {
+  const G = {};
   
-  // Real match data — compute from actual results safely
-  D.matches.forEach(m=>{
-    if(!m) return;
-    const g = (m.grp || m.group_name || m.group || TEAM_GROUP[m.home_team] || TEAM_GROUP[m.away_team] || '?');
-    if(!G[g]) G[g] = {};
-    
-    const ht = m.home_team || 'Unknown Home';
-    const at = m.away_team || 'Unknown Away';
-    
-    if(!G[g][ht]) G[g][ht] = {name:ht, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
-    if(!G[g][at]) G[g][at] = {name:at, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
-    
-    const h = G[g][ht];
-    const a = G[g][at];
-    
-    const hs = parseInt(m.home_score) || 0;
-    const as = parseInt(m.away_score) || 0;
-    
-    h.p++; a.p++;
-    h.gf += hs; h.ga += as;
-    a.gf += as; a.ga += hs;
-    
-    if(hs > as) { h.w++; h.pts += 3; a.l++; }
-    else if(hs < as) { a.w++; a.pts += 3; h.l++; }
-    else { h.d++; a.d++; h.pts++; a.pts++; }
+  // 1. Pre-fill all 48 teams so the object structure is always guaranteed
+  Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
+    G[L] = {};
+    teams.forEach(n => {
+      G[L][n] = { name: n, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+    });
   });
 
-  // Fill in any missing teams from ALL_TEAMS to guarantee 4 teams per group
-  Object.entries(ALL_TEAMS).forEach(([L,teams])=>{
-    if(!G[L]) G[L] = {};
-    teams.forEach(n=>{
-      if(!G[L][n]) G[L][n] = {name:n, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0};
-    });
+  if (D.isDemo) return G;
+
+  // 2. Process real match data with strict null checks
+  D.matches.forEach(m => {
+    if (!m || !m.home_team || !m.away_team) return;
+    
+    const g = m.grp || m.group_name || m.group || TEAM_GROUP[m.home_team] || TEAM_GROUP[m.away_team];
+    if (!g || !G[g]) return;
+
+    const ht = m.home_team;
+    const at = m.away_team;
+    
+    // Fallback in case a team name is somehow missing from the pre-fill
+    if (!G[g][ht]) G[g][ht] = { name: ht, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+    if (!G[g][at]) G[g][at] = { name: at, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+
+    const hs = parseInt(m.home_score);
+    const as = parseInt(m.away_score);
+
+    // 3. ONLY calculate points if both scores are valid numbers (prevents NaN crashes)
+    if (!isNaN(hs) && !isNaN(as)) {
+      G[g][ht].p++; 
+      G[g][at].p++;
+      G[g][ht].gf += hs; 
+      G[g][ht].ga += as;
+      G[g][at].gf += as; 
+      G[g][at].ga += hs;
+
+      if (hs > as) { G[g][ht].w++; G[g][ht].pts += 3; G[g][at].l++; }
+      else if (hs < as) { G[g][at].w++; G[g][at].pts += 3; G[g][ht].l++; }
+      else { G[g][ht].d++; G[g][at].d++; G[g][ht].pts++; G[g][at].pts++; }
+    }
   });
   return G;
 }
 
-function renderStandings(){
+function renderStandings() {
+  const el = document.getElementById('grpGrid');
+  if (!el) return;
+  
   try {
-    const el = document.getElementById('grpGrid');
-    if(!el) return;
     const G = computeStandings();
-    const letters = Object.keys(G).sort();
-    if(!letters.length){
-      el.innerHTML = '<div class="empty">Standings appear once matches are played</div>';
-      return;
-    }
     let html = '';
-    letters.forEach(L => {
-      // Bulletproof sorting that prevents NaN crashes
-      const rows = Object.values(G[L]).sort((a,b) => {
-        const ptsDiff = (b.pts||0) - (a.pts||0);
-        if(ptsDiff !== 0) return ptsDiff;
-        const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
-        if(gdDiff !== 0) return gdDiff;
-        return (b.gf||0) - (a.gf||0);
-      });
+    
+    // Sort groups A -> L
+    Object.keys(G).sort().forEach(L => {
       
-      html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
-        '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-        rows.map((t,i)=>{
-          const cls = i<2 ? 'qual' : i===2 ? 'third' : 'out';
-          const gd = (t.gf||0) - (t.ga||0);
-          const gdStr = gd > 0 ? '+'+gd : gd;
-          return '<tr class="'+cls+'"><td>'+flag(t.name||'')+escapeText(t.name||'Unknown')+'</td>'+
-                 '<td>'+(t.p||0)+'</td><td>'+(t.w||0)+'</td><td>'+(t.d||0)+'</td><td>'+(t.l||0)+'</td>'+
-                 '<td>'+gdStr+'</td><td class="pts">'+(t.pts||0)+'</td></tr>';
-        }).join('') + '</tbody></table></div>';
+      // Safe tie-breaker sorting: Points -> Goal Difference -> Goals Scored
+      const rows = Object.values(G[L]).sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        const gdA = a.gf - a.ga;
+        const gdB = b.gf - b.ga;
+        if (gdB !== gdA) return gdB - gdA;
+        return b.gf - a.gf;
+      });
+
+      html += `
+        <div class="grp-card">
+          <div class="grp-h">Group <em>${escapeText(L)}</em></div>
+          <table class="stbl">
+            <thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
+            <tbody>
+              ${rows.map((t, i) => {
+                const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+                const gd = t.gf - t.ga;
+                const gdStr = gd > 0 ? '+' + gd : gd;
+                return `<tr class="${cls}">
+                  <td>${flag(t.name) || ''}${escapeText(t.name)}</td>
+                  <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
+                  <td>${gdStr}</td><td class="pts">${t.pts}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
     });
-    el.innerHTML = html;
+    
+    el.innerHTML = html || '<div class="empty">No standings data available</div>';
     renderThirdPlace(G);
-  } catch(e) {
-    console.error("Standings Render Error:", e);
-    document.getElementById('grpGrid').innerHTML = '<div class="empty">Error calculating standings.</div>';
+  } catch (err) {
+    el.innerHTML = `<div class="empty">Error loading standings. Check console.</div>`;
+    console.error("Standings Error:", err);
   }
 }
 
-function renderThirdPlace(G){
+function renderThirdPlace(G) {
+  const tb = document.getElementById('thirdBody');
+  if (!tb) return;
+  
   try {
-    const tb = document.getElementById('thirdBody');
-    if(!tb) return;
-    const thirds=[];
-    Object.keys(G).forEach(L=>{
-      const rows=Object.values(G[L]).sort((a,b) => {
-        const ptsDiff = (b.pts||0) - (a.pts||0);
-        if(ptsDiff !== 0) return ptsDiff;
-        const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
-        if(gdDiff !== 0) return gdDiff;
-        return (b.gf||0) - (a.gf||0);
+    const thirds = [];
+    Object.keys(G).forEach(L => {
+      const rows = Object.values(G[L]).sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        const gdA = a.gf - a.ga;
+        const gdB = b.gf - b.ga;
+        if (gdB !== gdA) return gdB - gdA;
+        return b.gf - a.gf;
       });
-      if(rows.length>=3 && (rows[2].p||0)>0) thirds.push({...rows[2],grp:L});
+      // Only push teams that have actually played a game
+      if (rows.length >= 3 && rows[2].p > 0) {
+        thirds.push({ ...rows[2], grp: L });
+      }
     });
-    
-    if(!thirds.length){
-      tb.innerHTML='<tr><td colspan="6"><div class="empty">Third-place ranking appears once group matches are played</div></td></tr>';
+
+    if (thirds.length === 0) {
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
       return;
     }
-    
-    thirds.sort((a,b) => {
-      const ptsDiff = (b.pts||0) - (a.pts||0);
-      if(ptsDiff !== 0) return ptsDiff;
-      const gdDiff = ((b.gf||0)-(b.ga||0)) - ((a.gf||0)-(a.ga||0));
-      if(gdDiff !== 0) return gdDiff;
-      return (b.gf||0) - (a.gf||0);
+
+    // Sort the pool of 3rd place teams
+    thirds.sort((a, b) => {
+      if (b.pts !== a.pts) return b.pts - a.pts;
+      const gdA = a.gf - a.ga;
+      const gdB = b.gf - b.ga;
+      if (gdB !== gdA) return gdB - gdA;
+      return b.gf - a.gf;
     });
-    
-    tb.innerHTML=thirds.map((t,i)=>{
-      const adv = i<8; 
-      const gf = t.gf||0; const ga = t.ga||0;
-      const gd = gf-ga;
-      const gdStr = gd > 0 ? '+'+gd : gd;
-      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.name||'')+escapeText(t.name||'Unknown')+'</td>'+
-             '<td>'+escapeText(t.grp)+'</td><td>'+(t.p||0)+'</td><td>'+gdStr+'</td><td>'+gf+'</td><td class="pts">'+(t.pts||0)+'</td></tr>';
+
+    tb.innerHTML = thirds.map((t, i) => {
+      const adv = i < 8; // Top 8 3rd place teams advance
+      const gd = t.gf - t.ga;
+      const gdStr = gd > 0 ? '+' + gd : gd;
+      return `<tr class="${adv ? 'qual' : 'out'}">
+        <td>${flag(t.name) || ''}${escapeText(t.name)}</td>
+        <td>${escapeText(t.grp)}</td><td>${t.p}</td><td>${gdStr}</td>
+        <td>${t.gf}</td><td class="pts">${t.pts}</td>
+      </tr>`;
     }).join('');
-  } catch(e) {
-    console.error("Third Place Render Error:", e);
+  } catch (err) {
+    console.error("Third Place Error:", err);
   }
 }
 
