@@ -51,8 +51,9 @@
   .live-pill.is-live { color:var(--green); }
   .live-pill.is-live .live-dot { background:var(--green); animation:pulse 1.8s infinite; }
 
+  /* HERO SECTION FIX - Pushes cards to bottom */
   .hero { padding:36px 40px 28px; position:relative; }
-  .hero-inner { display:grid; grid-template-columns:1fr 320px; gap:36px; align-items:start; }
+  .hero-inner { display:grid; grid-template-columns:1fr 320px; gap:36px; align-items:stretch; }
   .hero-main { display:flex; flex-direction:column; }
   .hero-spot { background:linear-gradient(165deg,var(--surf1),rgba(11,15,28,0.5)); border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
   .spot-h { font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
@@ -82,7 +83,10 @@
   .hero-title { font-family:'Saira Condensed',sans-serif; font-weight:900; font-size:clamp(46px,8vw,86px); line-height:0.92; letter-spacing:-0.01em; text-transform:uppercase; margin-bottom:8px; }
   .hero-title .glow { color:var(--gold); text-shadow:0 0 36px var(--gold-glow); }
   .hero-sub { font-size:15px; color:var(--muted); max-width:520px; line-height:1.6; margin-bottom:30px; }
-  .hero-stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  
+  /* ADDED: margin-top: auto forces it to the bottom, pushing down past the gap */
+  .hero-stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:20px; }
+  
   .hstat { position:relative; background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:12px; padding:12px 18px 10px; overflow:hidden; min-width:100px; flex:1; }
   .hstat::after { content:''; position:absolute; left:0; bottom:0; height:2px; width:100%; }
   .hstat.s-gold::after{background:var(--gold)} .hstat.s-green::after{background:var(--green)} .hstat.s-blue::after{background:var(--blue)} .hstat.s-red::after{background:var(--red)}
@@ -510,9 +514,9 @@
 <footer class="foot"><span>World Cup 2026 Analytics &nbsp;&middot;&nbsp; by <em>Lutuf Abdulla</em></span></footer>
 
 <script>
-// UI Protection Utility
+// UI Protection Utility (Failsafe string formatting)
 const escapeText = (str) => {
-  if (str === null || str === undefined) return '';
+  if (str === null || str === undefined || str === 'undefined') return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -674,7 +678,6 @@ function countdown(){
 }
 async function sb(t,p){try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?'+p,{headers});if(!r.ok)return null;return await r.json();}catch{return null;}}
 
-// REMEMBERS TAB ON RELOAD
 function tab(n,b){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tabs .tab').forEach(t=>t.classList.remove('active'));
@@ -915,24 +918,22 @@ function initTeams(){
   renderTeam();
 }
 
-
-// HYBRID STANDINGS LOGIC: Bulletproof fallback
+// BULLETPROOF STANDINGS LOGIC (Immune to NaN/Undefined API crashes)
 function getSafeStandings() {
-  // 1. If we have official API standings from Supabase, use them!
+  const G = {};
+  Object.keys(ALL_TEAMS).forEach(L => { G[L] = []; });
+
+  // 1. Try to use official API standings safely
   if (D.standings && D.standings.length > 0) {
-    let G = {};
     D.standings.forEach(t => {
       const L = t.group_name || 'A';
-      if (!G[L]) G[L] = [];
-      G[L].push(t);
+      if (G[L]) G[L].push(t);
     });
     return G;
   }
 
-  // 2. Otherwise, manually compute from matches seamlessly so it never breaks
-  const G = {};
+  // 2. Local Fallback Generator
   Object.entries(ALL_TEAMS).forEach(([L, teams]) => {
-    G[L] = [];
     teams.forEach(n => {
       G[L].push({ team_name: n, group_name: L, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 });
     });
@@ -950,13 +951,13 @@ function getSafeStandings() {
     }
 
     if (!ht) {
-       const g = getGroup(m) || '?';
+       const g = getGroup(m) || 'A';
        if (!G[g]) G[g] = [];
        ht = { team_name: m.home_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
        G[g].push(ht);
     }
     if (!at) {
-       const g = getGroup(m) || '?';
+       const g = getGroup(m) || 'A';
        if (!G[g]) G[g] = [];
        at = { team_name: m.away_team, group_name: g, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 };
        G[g].push(at);
@@ -986,35 +987,46 @@ function renderStandings() {
   if (!el) return;
   try {
     const G = getSafeStandings();
-    const letters = Object.keys(G).sort();
+    const letters = Object.keys(G).filter(k => k !== 'undefined' && k !== '?').sort();
     
-    if (!letters.length) {
-      el.innerHTML = '<div class="empty">No standings data</div>';
+    if (letters.length === 0) {
+      el.innerHTML = '<div class="empty">Waiting for match data...</div>';
       return;
     }
 
     let html = '';
     letters.forEach(L => {
-      const rows = G[L].sort((a,b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-        return b.goals_for - a.goals_for;
+      const rows = G[L] || [];
+      
+      // Strict integer sorting
+      rows.sort((a,b) => {
+        const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
+        if (ptsB !== ptsA) return ptsB - ptsA;
+        const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
+        if (gdB !== gdA) return gdB - gdA;
+        return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
       });
       
+      let trs = '';
+      rows.forEach((t, i) => {
+        const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
+        const gd = parseInt(t.goals_diff)||0;
+        const gdStr = gd > 0 ? '+' + gd : gd;
+        
+        trs += '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name||'TBD')+'</td>'+
+               '<td>'+(t.played||0)+'</td><td>'+(t.win||0)+'</td><td>'+(t.draw||0)+'</td><td>'+(t.lose||0)+'</td>'+
+               '<td>'+gdStr+'</td><td class="pts">'+(t.points||0)+'</td></tr>';
+      });
+
       html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
         '<table class="stbl"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>'+
-        rows.map((t, i) => {
-          const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
-          const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-          return '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-                 '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
-                 '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
-        }).join('') + '</tbody></table></div>';
+        trs + '</tbody></table></div>';
     });
+    
     el.innerHTML = html;
     renderThirdPlace(G);
   } catch (err) {
-    el.innerHTML = '<div class="empty">Error calculating standings</div>';
+    el.innerHTML = '<div class="empty">Error calculating standings. Please check data.</div>';
     console.error("Standings Error:", err);
   }
 }
@@ -1025,34 +1037,44 @@ function renderThirdPlace(G) {
   try {
     const thirds = [];
     Object.keys(G).forEach(L => {
-      const rows = G[L].sort((a,b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-        return b.goals_for - a.goals_for;
+      const rows = G[L] || [];
+      rows.sort((a,b) => {
+        const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
+        if (ptsB !== ptsA) return ptsB - ptsA;
+        const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
+        if (gdB !== gdA) return gdB - gdA;
+        return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
       });
-      if (rows.length >= 3 && rows[2] && rows[2].played > 0) {
+      
+      if (rows.length >= 3 && (parseInt(rows[2].played)||0) > 0) {
         thirds.push({ ...rows[2], group_name: L });
       }
     });
 
-    if (!thirds.length) {
+    if (thirds.length === 0) {
       tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
       return;
     }
 
     thirds.sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.goals_diff !== a.goals_diff) return b.goals_diff - a.goals_diff;
-      return b.goals_for - a.goals_for;
+      const ptsA = parseInt(a.points)||0, ptsB = parseInt(b.points)||0;
+      if (ptsB !== ptsA) return ptsB - ptsA;
+      const gdA = parseInt(a.goals_diff)||0, gdB = parseInt(b.goals_diff)||0;
+      if (gdB !== gdA) return gdB - gdA;
+      return (parseInt(b.goals_for)||0) - (parseInt(a.goals_for)||0);
     });
 
-    tb.innerHTML = thirds.map((t, i) => {
+    let trs = '';
+    thirds.forEach((t, i) => {
       const adv = i < 8; 
-      const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
-      return '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-             '<td>'+escapeText(t.group_name)+'</td><td>'+t.played+'</td><td>'+gdStr+'</td>'+
-             '<td>'+t.goals_for+'</td><td class="pts">'+t.points+'</td></tr>';
-    }).join('');
+      const gd = parseInt(t.goals_diff)||0;
+      const gdStr = gd > 0 ? '+' + gd : gd;
+      
+      trs += '<tr class="'+(adv?'qual':'out')+'"><td>'+flag(t.team_name)+escapeText(t.team_name||'TBD')+'</td>'+
+             '<td>'+escapeText(t.group_name)+'</td><td>'+(t.played||0)+'</td><td>'+gdStr+'</td>'+
+             '<td>'+(t.goals_for||0)+'</td><td class="pts">'+(t.points||0)+'</td></tr>';
+    });
+    tb.innerHTML = trs;
   } catch (err) {
     console.error("Third Place Error:", err);
   }
@@ -1263,7 +1285,6 @@ async function load(){
   initPlayers();initTeams();renderStandings();renderBracket();renderAwards();
 }
 
-// RESTORE SAVED TAB ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
   const savedTab = localStorage.getItem('wc2026_tab') || 'overview';
   setTimeout(() => tab(savedTab, null), 50);
