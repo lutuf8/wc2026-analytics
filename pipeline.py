@@ -385,7 +385,7 @@ def update_overall_ppi(fixture_id):
 
         match_players = supabase.table('player_match_stats').select('player_id, position_ppi').eq('fixture_id', fixture_id).eq('position', pos).execute()
 
-        ffor row in match_players.data:
+        for row in match_players.data:
             if row.get('position_ppi'):
                 if len(ppis) < 8:
                     overall = round(min(row['position_ppi'], 10.0), 2)
