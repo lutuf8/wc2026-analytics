@@ -365,9 +365,9 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             })
 
     if player_profiles_to_upsert:
-        supabase.table('players').upsert(player_profiles_to_upsert).execute()
+        supabase.table('players').upsert(player_profiles_to_upsert, on_conflict='player_id').execute()
     if player_stats_to_upsert:
-        supabase.table('player_match_stats').upsert(player_stats_to_upsert).execute()
+        supabase.table('player_match_stats').upsert(player_stats_to_upsert, on_conflict='fixture_id,player_id').execute()
 
     print(f"  ✓ {len(player_stats_to_upsert)} player records saved")
     update_overall_ppi(fixture_id)
