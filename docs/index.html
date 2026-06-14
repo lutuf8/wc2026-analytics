@@ -737,11 +737,10 @@ function genContent(){
   a.push({t:'tac',l:'🎯 Tactical Angle',
     x:m.home_team+' '+score+' '+m.away_team+' | Tactical Breakdown\n\n'+'Possession: '+m.home_team+' '+m.home_possession+'% vs '+m.away_team+' '+m.away_possession+'%\n'+'Shots: '+(m.home_shots||'—')+' vs '+(m.away_shots||'—')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1)+'\n':'')+'\n'+(domPoss>=60?dom+' controlled the tempo but did it translate into the result?':winner?winner+' won it without controlling possession — efficiency over dominance.':'Both sides cancelled each other out in a closely-contested tactical battle.')+'\n\n#WC2026 #Tactics'});
 
-  if(mom){
+  if(mom && mom.name && mom.team){
     a.push({t:'hook',l:'⭐ Player Spotlight (MOM)',
-      x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+Number(mom.ovr||0).toFixed(1)+' | Goals: '+mom.g+' | Assists: '+mom.a+'\nKey passes: '+mom.kp+' | Dribbles: '+mom.drb+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+mom.name.replace(/[^a-zA-Z]/g,'')+' #'+mom.team.replace(/ /g,'')});
+      x:'PLAYER OF THE MATCH: '+mom.name+' ('+mom.team+')\n\nPPI: '+Number(mom.ovr||0).toFixed(1)+' | Goals: '+(mom.g||0)+' | Assists: '+(mom.a||0)+'\nKey passes: '+(mom.kp||0)+' | Dribbles: '+(mom.drb||0)+'\n\nOur Player Performance Index ranked him the best player on the pitch tonight.\n\n#WC2026 #'+String(mom.name).replace(/[^a-zA-Z]/g,'')+' #'+String(mom.team).replace(/ /g,'')});
   }
-
   a.push({t:'tac',l:'📱 IG Carousel Structure',
     x:'SLIDE 1 — Hook\n"'+m.home_team+' '+score+' '+m.away_team+' — The data breakdown"\n\nSLIDE 2 — Key Stats\nPossession: '+m.home_possession+'% vs '+m.away_possession+'%\nShots: '+(m.home_shots||'?')+' vs '+(m.away_shots||'?')+'\n'+(m.home_xg?'xG: '+Number(m.home_xg).toFixed(1)+' vs '+Number(m.away_xg).toFixed(1):'')+'\n\nSLIDE 3 — Best Player\n'+( mom?mom.name+' — PPI '+Number(mom.ovr||0).toFixed(1):'See our full player ratings')+'\n\nSLIDE 4 — xG Story\nWho really deserved to win?\n\nSLIDE 5 — CTA\n"Full analytics at [your link in bio]"'});
 
@@ -1123,7 +1122,8 @@ async function load(){
   document.getElementById('scorers').innerHTML=scorers(sc);
   renderSpotlight();renderNextMatch();computeStorylines();
   document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+escapeText(x.home_team)+' '+(x.home_score??'?')+'-'+(x.away_score??'?')+' '+escapeText(x.away_team)+'</option>').join('');
-  genContent();predict();
+  try{ genContent(); }catch(e){ console.warn('genContent skipped:',e); }
+  try{ predict(); }catch(e){ console.warn('predict skipped:',e); }
   initPlayers();initTeams();
   
   // Now rendering accurately from Supabase
