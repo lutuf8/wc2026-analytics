@@ -210,6 +210,8 @@
   .awtbl tbody tr:first-child td { background:rgba(255,193,48,0.05); }
 
   .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  
+  /* Scrollable Table CSS */
   .tbl-scroll { max-height: 420px; overflow-y: auto; }
   .tbl-scroll th { position: sticky; top: 0; background: var(--surf2); z-index: 10; box-shadow: 0 1px 0 var(--line); }
   .tbl-scroll::-webkit-scrollbar { width: 6px; }
@@ -552,7 +554,7 @@ const DEMO_MATCHES=[
   {home_team:'Qatar',away_team:'Switzerland',home_score:1,away_score:1,home_possession:43,away_possession:57,home_shots:6,away_shots:14,home_xg:0.6,away_xg:1.9,round:'Group B',grp:'B',date:'2026-06-12'},
   {home_team:'United States',away_team:'Paraguay',home_score:4,away_score:1,home_possession:57,away_possession:43,home_shots:14,away_shots:9,home_xg:1.8,away_xg:1.1,round:'Group D',grp:'D',date:'2026-06-12'},
 ];
-const DEMO_UPCOMING=FULL_SCHEDULE=[
+const DEMO_UPCOMING=[
   {home:'Brazil',away:'Morocco',date:'2026-06-13T22:00:00Z',venue:'MetLife Stadium, New Jersey',grp:'C'},
   {home:'Haiti',away:'Scotland',date:'2026-06-14T01:00:00Z',venue:'Gillette Stadium, Boston',grp:'C'},
   {home:'Australia',away:'Türkiye',date:'2026-06-14T04:00:00Z',venue:'BC Place, Vancouver',grp:'D'},
@@ -581,7 +583,7 @@ const DEMO_TEAMS=[
   {name:'France',xg:2.8,goals:3,possession:67,ppda:7.2},{name:'Spain',xg:2.8,goals:3,possession:70,ppda:6.5},
 ];
 
-let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true};
+let D={matches:DEMO_MATCHES,ppi:DEMO_PPI,teams:DEMO_TEAMS,isDemo:true,standings:[]};
 
 const ALL_TEAMS={
   A:['Mexico','South Africa','South Korea','Czechia'],
@@ -847,69 +849,36 @@ function initTeams(){
   renderTeam();
 }
 
-// ── STRICT LOCAL STANDINGS ENGINE (Ignores Supabase Standings Table) ──
-function computeStandings() {
-  const G = {};
-  
-  // Pre-fill all 48 teams into their correct groups
-  Object.keys(ALL_TEAMS).forEach(L => {
-    G[L] = [];
-    ALL_TEAMS[L].forEach(n => {
-      G[L].push({ team_name: n, group_name: L, played: 0, win: 0, draw: 0, lose: 0, goals_for: 0, goals_against: 0, goals_diff: 0, points: 0 });
-    });
-  });
 
-  // Calculate points and GD straight from the match history
-  if (Array.isArray(D.matches) && D.matches.length > 0) {
-    D.matches.forEach(m => {
-      if (!m.home_team || !m.away_team) return;
-      
-      let ht, at;
-      // Locate the teams securely across groups
-      for (let L in G) {
-        if (!ht) ht = G[L].find(x => x.team_name === m.home_team);
-        if (!at) at = G[L].find(x => x.team_name === m.away_team);
-      }
-      
-      // Tally scores if the match actually has numbers
-      if (ht && at) {
-        const hs = parseInt(m.home_score);
-        const as = parseInt(m.away_score);
-        
-        if (!isNaN(hs) && !isNaN(as)) {
-          ht.played++; at.played++;
-          ht.goals_for += hs; at.goals_for += as;
-          ht.goals_against += as; at.goals_against += hs;
-          ht.goals_diff = ht.goals_for - ht.goals_against;
-          at.goals_diff = at.goals_for - at.goals_against;
-
-          if (hs > as) { ht.win++; ht.points += 3; at.lose++; }
-          else if (hs < as) { at.win++; at.points += 3; ht.lose++; }
-          else { ht.draw++; at.draw++; ht.points++; at.points++; }
-        }
-      }
-    });
-  }
-  return G;
-}
-
+// ── 100% BULLETPROOF STANDINGS FROM SUPABASE ──
 function renderStandings() {
   const el = document.getElementById('grpGrid');
   if (!el) return;
-
-  const G = computeStandings();
-  let html = '';
   
+  if (!D.standings || !D.standings.length) {
+    el.innerHTML = '<div class="empty">Waiting for Standings Data... Make sure the Python pipeline has run.</div>';
+    return;
+  }
+
+  let G = {};
+  D.standings.forEach(t => {
+    const L = t.group_name || '?';
+    if (!G[L]) G[L] = [];
+    G[L].push(t);
+  });
+
+  let html = '';
   Object.keys(G).sort().forEach(L => {
-    const rows = G[L].sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
+    // Sort strictly by official API rank
+    const rows = G[L].sort((a,b) => a.rank - b.rank);
     let trs = '';
     
     rows.forEach((t, i) => {
       const cls = i < 2 ? 'qual' : (i === 2 ? 'third' : 'out');
       const gdStr = t.goals_diff > 0 ? '+' + t.goals_diff : t.goals_diff;
       trs += '<tr class="'+cls+'"><td>'+flag(t.team_name)+escapeText(t.team_name)+'</td>'+
-             '<td>'+t.played+'</td><td>'+t.win+'</td><td>'+t.draw+'</td><td>'+t.lose+'</td>'+
-             '<td>'+gdStr+'</td><td class="pts">'+t.points+'</td></tr>';
+             '<td>'+(t.played||0)+'</td><td>'+(t.win||0)+'</td><td>'+(t.draw||0)+'</td><td>'+(t.lose||0)+'</td>'+
+             '<td>'+gdStr+'</td><td class="pts">'+(t.points||0)+'</td></tr>';
     });
     
     html += '<div class="grp-card"><div class="grp-h">Group <em>'+escapeText(L)+'</em></div>'+
@@ -927,14 +896,18 @@ function renderThirdPlace(G) {
   
   let thirds = [];
   Object.keys(G).forEach(L => {
-    const rows = G[L].sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
-    // Always push the 3rd place team, even if played is 0
-    if (rows.length >= 3) {
-      thirds.push(rows[2]);
+    const rows = G[L].sort((a,b) => a.rank - b.rank);
+    if (rows.length >= 3 && rows[2].played > 0) {
+      thirds.push({...rows[2], group_name: L});
     }
   });
 
-  // Rank 3rd place teams against each other
+  if (!thirds.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty">Third-place ranking appears once matches are played</div></td></tr>';
+    return;
+  }
+
+  // Rank 3rd place teams against each other based on standard rules
   thirds.sort((a,b) => (b.points - a.points) || (b.goals_diff - a.goals_diff) || (b.goals_for - a.goals_for));
   
   let trs = '';
@@ -1039,11 +1012,17 @@ function renderAwards(){
 async function load(){
   countdown();
 
-  const [m, pd, pms] = await Promise.all([
+  // CRUCIAL RESTORE: Fetching standings from Supabase
+  const [m, pd, pms, st] = await Promise.all([
     sb('matches','select=*&limit=200'),
     sb('tournament_leaderboard','select=*&order=avg_overall_ppi.desc&limit=100'),
-    sb('player_match_stats','select=*&limit=1000')
+    sb('player_match_stats','select=*&limit=1000'),
+    sb('standings','select=*&limit=100')
   ]);
+
+  if(st && st.length > 0) {
+    D.standings = st;
+  }
 
   if(m&&m.length>0){
     D.isDemo=false;
@@ -1147,7 +1126,7 @@ async function load(){
   genContent();predict();
   initPlayers();initTeams();
   
-  // Renders locally using matches table ONLY
+  // Now rendering accurately from Supabase
   renderStandings(); 
   
   renderBracket();renderAwards();
@@ -1158,10 +1137,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => tab(savedTab, null), 50);
 });
 
-// Run immediately on page load
 load();
-
-// Silently fetch new data from Supabase every 3 minutes so the dashboard updates live
 setInterval(load, 180000); 
 </script>
 </body>
