@@ -105,10 +105,11 @@ def calculate_ppi(stats, position):
                r_tackles     * 0.15 +
                r_fouls_drawn * 0.10)
     elif pos in ['G', 'GOALKEEPER']:
-        ppi = (r_rating     * 0.30 +
-               r_save_ratio * 0.30 +
-               r_saves      * 0.20 +
-               r_save_ratio * 0.20)
+        clean_sheet = 1.0 if goals_conceded == 0 and int(gm.get('minutes') or 0) >= 60 else 0.0
+        ppi = (r_rating      * 0.40 +
+               r_saves       * 0.25 +
+               r_save_ratio  * 0.20 +
+               (clean_sheet * 10) * 0.15)
     else:
         ppi = r_rating
 
@@ -384,9 +385,12 @@ def update_overall_ppi(fixture_id):
 
         match_players = supabase.table('player_match_stats').select('player_id, position_ppi').eq('fixture_id', fixture_id).eq('position', pos).execute()
 
-        for row in match_players.data:
+        ffor row in match_players.data:
             if row.get('position_ppi'):
-                overall = round(min((row['position_ppi'] / avg) * 10, 15.0), 2)
+                if len(ppis) < 8:
+                    overall = round(min(row['position_ppi'], 10.0), 2)
+                else:
+                    overall = round(min((row['position_ppi'] / avg) * 10, 12.0), 2)
                 supabase.table('player_match_stats').update({'overall_ppi': overall}).eq('fixture_id', fixture_id).eq('player_id', row['player_id']).execute()
 
     print(f"  ✓ Overall PPI normalised")
