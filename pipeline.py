@@ -417,23 +417,28 @@ def run():
         print("No finished matches found.")
         return
 
-    new = [m for m in finished if not match_already_processed(m['fixture']['id'])]
-    print(f"Finished: {len(finished)} | New to process: {len(new)}")
+    print(f"Finished matches: {len(finished)}")
 
-    for match in new:
+    for match in finished:
         fid  = match['fixture']['id']
         home = match['teams']['home']['name']
         away = match['teams']['away']['name']
-        print(f"\n→ {home} vs {away}  (fixture {fid})")
+        already = match_already_processed(fid)
+        print(f"\n→ {home} vs {away}  (fixture {fid}) [{'refresh' if already else 'NEW'}]")
 
-        stats   = get_statistics(fid)
-        players = get_players(fid)
-        events  = get_events(fid)
-        lineups = get_lineups(fid)
-
+        stats = get_statistics(fid)
         save_match(match, stats)
-        save_events(fid, events)
-        save_players_and_stats(fid, players, lineups)
+
+        if not already:
+            players = get_players(fid)
+            events  = get_events(fid)
+            lineups = get_lineups(fid)
+            save_events(fid, events)
+            save_players_and_stats(fid, players, lineups)
+        else:
+            players = get_players(fid)
+            lineups = get_lineups(fid)
+            save_players_and_stats(fid, players, lineups)
 
         print(f"✅ Done: {home} vs {away}")
 
