@@ -45,7 +45,7 @@ def calculate_ppi(stats, position):
     dr  = stats.get('dribbles', {})    or {}
     f   = stats.get('fouls', {})       or {}
     gm  = stats.get('games', {})       or {}
-    gk  = stats.get('goalkeeper', {})  or {}
+    gk  = stats.get('goals', {})  or {}
 
     rating        = float(gm.get('rating') or 0)
     goals         = int(g.get('total') or 0)
@@ -62,7 +62,7 @@ def calculate_ppi(stats, position):
     drib_succ     = int(dr.get('success') or 0)
     fouls_drawn   = int(f.get('drawn') or 0)
     saves         = int(gk.get('saves') or 0)
-    goals_conceded= int(gk.get('goals_conceded') or 0)
+    goals_conceded= int(gk.get('conceded') or 0)
 
     duels_ratio = (duels_won / duels_total)              if duels_total > 0 else 0.0
     drib_ratio  = (drib_succ / drib_att)                 if drib_att > 0   else 0.0
@@ -334,8 +334,8 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
             dr = stats.get('dribbles', {}) or {}
             f  = stats.get('fouls', {})    or {}
             gm = stats.get('games', {})    or {}
-            gk = stats.get('goalkeeper',{})or {}
             c  = stats.get('cards', {})    or {}
+            pen= stats.get('penalty', {})  or {}
 
             player_stats_to_upsert.append({
                 'fixture_id':          fixture_id,
@@ -363,8 +363,11 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'fouls_committed':     f.get('committed') or 0,
                 'yellow_cards':        c.get('yellow') or 0,
                 'red_cards':           c.get('red') or 0,
-                'saves':               gk.get('saves') or 0,
-                'goals_conceded':      gk.get('goals_conceded') or 0,
+                'saves':               g.get('saves') or 0,
+                'goals_conceded':      g.get('conceded') or 0,
+                'penalty_scored':      pen.get('scored') or 0,
+                'penalty_missed':      pen.get('missed') or 0,
+                'penalty_saved':       pen.get('saved') or 0,
                 'position_ppi':        pos_ppi,
                 'overall_ppi':         None,
             })
