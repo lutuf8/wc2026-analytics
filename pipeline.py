@@ -391,10 +391,10 @@ def update_overall_ppi(fixture_id):
 
         for row in match_players.data:
             if row.get('position_ppi'):
-                if len(ppis) < 40:
-                    overall = round(min(row['position_ppi'], 10.0), 2)
-                else:
-                    overall = round(min((row['position_ppi'] / avg) * 10, 12.0), 2)
+                # position_ppi is already baseline-anchored on a 1-10 football scale.
+                # Use it directly — cross-position normalisation was flattening
+                # everyone into the cap and creating ties at 12.0.
+                overall = round(row['position_ppi'], 2)
                 supabase.table('player_match_stats').update({'overall_ppi': overall}).eq('fixture_id', fixture_id).eq('player_id', row['player_id']).execute()
 
     print(f"  ✓ Overall PPI normalised")
