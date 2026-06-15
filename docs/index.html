@@ -498,18 +498,29 @@
     </div>
     <div class="method">
       <div class="chart-t">Methodology &mdash; Player Performance Index (PPI)</div>
-      <div class="chart-d" style="margin-bottom:10px;">A custom composite scoring each player 0&ndash;10 per match using position-specific weights. The <b>overall PPI</b> normalises across positions so forwards, midfielders, defenders and keepers can be compared fairly. A score above 10 means the player performed above their position's tournament average.</div>
+      <div class="chart-d" style="margin-bottom:10px;">A custom composite that scores every player's individual match performance, using position-specific weights so forwards, midfielders, defenders and goalkeepers are each judged on what matters for their role. Ratings reflect <b>tournament performance to date</b> — they describe what a player has done so far, not a prediction of overall ability. Early in the competition samples are small, so values carry inherent uncertainty.</div>
+
       <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Forwards</div>
       <div class="formula">0.30(goals) + 0.25(rating) + 0.15(assists) + 0.10(shots_on_target) + 0.10(dribbles) + 0.10(key_passes)</div>
+
       <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Midfielders</div>
       <div class="formula">0.25(rating) + 0.25(key_passes) + 0.20(pass_accuracy) + 0.15(assists) + 0.10(duels_won) + 0.05(goals)</div>
+
       <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Defenders</div>
       <div class="formula">0.30(rating) + 0.25(duels_won) + 0.20(interceptions) + 0.15(tackles) + 0.10(fouls_drawn)</div>
+
       <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Goalkeepers</div>
-      <div class="formula">0.30(rating) + 0.30(save_percentage) + 0.20(saves) + 0.20(goals_conceded_vs_xG)</div>
-      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Normalisation</div>
-      <div class="formula">PPI_overall = (PPI_position / position_average) × 10</div>
-      <div class="chart-d" style="margin-top:8px;">Each raw stat is first normalised 0–10 using min-max scaling across all players at that position. Weights were chosen to reflect what matters most per position and are calibrated on live tournament data.</div>
+      <div class="formula">0.40(rating) + 0.25(saves) + 0.20(save_ratio) + 0.15(clean_sheet_bonus)</div>
+
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Component scaling</div>
+      <div class="chart-d" style="margin-bottom:6px;">Each raw stat is scaled to a 0&ndash;10 range against a realistic single-match ceiling for that stat (e.g. a hat-trick anchors the goals scale), then combined using the position weights above.</div>
+
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Baseline anchoring</div>
+      <div class="formula">final = 6.0 + (raw_ppi &minus; 5.0) &times; 0.7</div>
+      <div class="chart-d" style="margin-bottom:6px;">Scores are anchored to a <b>6.0 baseline</b> representing an average professional performance, with contributions moving a player up or down from there. This mirrors how established football rating systems are built and keeps small early-tournament samples from producing extreme outliers (a form of regression toward the mean).</div>
+
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;font-family:'JetBrains Mono',monospace;">Cross-position comparison</div>
+      <div class="chart-d">To rank players from different positions on one board, each score is compared against its position's tournament average once enough matches exist. Until a position has a stable sample, the raw position score is used directly to avoid distortion from a tiny early dataset.</div>
     </div>
   </div>
 
