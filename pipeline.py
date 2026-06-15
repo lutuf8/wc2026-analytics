@@ -387,7 +387,7 @@ def update_overall_ppi(fixture_id):
 
         for row in match_players.data:
             if row.get('position_ppi'):
-                if len(ppis) < 8:
+                if len(ppis) < 40:
                     overall = round(min(row['position_ppi'], 10.0), 2)
                 else:
                     overall = round(min((row['position_ppi'] / avg) * 10, 12.0), 2)
