@@ -365,6 +365,7 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'red_cards':           c.get('red') or 0,
                 'saves':               g.get('saves') or 0,
                 'goals_conceded':      g.get('conceded') or 0,
+                'blocks':              t.get('blocks') or 0,
                 'penalty_scored':      pen.get('scored') or 0,
                 'penalty_missed':      pen.get('missed') or 0,
                 'penalty_saved':       pen.get('saved') or 0,
