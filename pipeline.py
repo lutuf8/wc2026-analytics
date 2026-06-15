@@ -358,6 +358,7 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'duels_won':           d.get('won') or 0,
                 'tackles':             t.get('total') or 0,
                 'interceptions':       t.get('interceptions') or 0,
+                'blocks':              t.get('blocks') or 0,
                 'fouls_drawn':         f.get('drawn') or 0,
                 'fouls_committed':     f.get('committed') or 0,
                 'yellow_cards':        c.get('yellow') or 0,
