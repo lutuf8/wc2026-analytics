@@ -668,8 +668,10 @@ function renderSpotlight(){
 function renderNextMatch(){
   const el=document.getElementById('nextMatch');if(!el)return;
   const now=new Date();
-  const sched=(typeof FULL_SCHEDULE!=='undefined'?FULL_SCHEDULE:UPCOMING); const next=sched.map(m=>({...m,d:new Date(m.date)})).filter(m=>m.d>now).sort((a,b)=>a.d-b.d)[0]||sched[sched.length-1];
-  if(!next){el.style.display='none';return;}
+  const sched=(typeof FULL_SCHEDULE!=='undefined'?FULL_SCHEDULE:UPCOMING);
+  const withDates=sched.map(m=>({...m,d:new Date(m.date)})).sort((a,b)=>a.d-b.d);
+  const next=withDates.filter(m=>m.d>now)[0]||withDates[withDates.length-1];
+  if(!next || !next.d || isNaN(next.d)){el.style.display='none';return;}
   const opts={weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dubai'};
   const when=next.d.toLocaleString('en-AE',opts)+' UAE';
   el.innerHTML='<div class="nm-label">Next match</div>'+
@@ -1132,7 +1134,9 @@ async function load(){
   document.getElementById('ppiBoard').innerHTML=ppiBoard(D.ppi);
   const sc=D.ppi.filter(p=>p.total_goals>0).sort((a,b)=>b.total_goals-a.total_goals||b.total_assists-a.total_assists||a.matches_played-b.matches_played).slice(0,6);
   document.getElementById('scorers').innerHTML=scorers(sc);
-  renderSpotlight();renderNextMatch();computeStorylines();
+  renderSpotlight();
+  try{ renderNextMatch(); }catch(e){ console.warn('renderNextMatch skipped:',e); }
+  computeStorylines();
   document.getElementById('matchSel').innerHTML=D.matches.map((x,i)=>'<option value="'+i+'">'+escapeText(x.home_team)+' '+(x.home_score??'?')+'-'+(x.away_score??'?')+' '+escapeText(x.away_team)+'</option>').join('');
   try{ genContent(); }catch(e){ console.warn('genContent skipped:',e); }
   try{ predict(); }catch(e){ console.warn('predict skipped:',e); }
