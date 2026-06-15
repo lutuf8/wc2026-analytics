@@ -368,6 +368,8 @@ def save_players_and_stats(fixture_id, players_data, lineups_data):
                 'penalty_scored':      pen.get('scored') or 0,
                 'penalty_missed':      pen.get('missed') or 0,
                 'penalty_saved':       pen.get('saved') or 0,
+                'penalty_won':         pen.get('won') or 0,
+                'penalty_conceded':    pen.get('commited') or 0,
                 'position_ppi':        pos_ppi,
                 'overall_ppi':         None,
             })
