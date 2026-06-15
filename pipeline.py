@@ -113,7 +113,11 @@ def calculate_ppi(stats, position):
     else:
         ppi = r_rating
 
-    return round(min(ppi, 10.0), 2)
+    # Anchor to a 6.0 baseline (average pro performance). Small samples stay near
+    # baseline and only move out as a player builds a consistent body of work —
+    # this regresses noisy early-tournament ratings toward the mean.
+    final = 6.0 + (ppi - 5.0) * 0.7
+    return round(max(1.0, min(final, 10.0)), 2)
 
 
 # ── API CLIENT ───────────────────────────────────────────────────────────────
